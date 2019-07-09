@@ -6,6 +6,8 @@
 //  Copyright © 2018 Ziquid Design Studio, LLC. All rights reserved.
 //
 
+//import TextToSpeechV1
+import AVFoundation
 import UIKit
 import WebKit
 import os.log
@@ -13,6 +15,15 @@ import os.log
 class ViewController: UIViewController, WKUIDelegate, WKNavigationDelegate {
 
     var webView: WKWebView!
+    var uuidPrefix = ""
+    
+    // iOS TTS
+    var utterance: AVSpeechUtterance = AVSpeechUtterance(string: "");
+    let synthesizer = AVSpeechSynthesizer()
+    
+    // IBM Text to Speech service object
+//    var textToSpeech: TextToSpeech!
+    var player: AVAudioPlayer?
     
     override func loadView() {
         let webConfiguration = WKWebViewConfiguration()
@@ -60,7 +71,9 @@ class ViewController: UIViewController, WKUIDelegate, WKNavigationDelegate {
         let versionStr = deviceType + "/" + Bundle.main.releaseVersionNumber! + "/" + Bundle.main.buildVersionNumber!
         let deviceWidth = (UIWebView().stringByEvaluatingJavaScript(from: "screen.width") ?? "320")
         os_log("screen width: %@", type: .info, deviceWidth);
-        let customUserAgent = " (com.ziquid.uslce; " + versionStr + "; width=" + deviceWidth + "; authKey=" + authKey + ")"
+        let deviceHeight = (UIWebView().stringByEvaluatingJavaScript(from: "screen.height") ?? "480")
+        os_log("screen height: %@", type: .info, deviceHeight);
+        let customUserAgent = " (com.ziquid.uslce; " + versionStr + "; width=" + deviceWidth + "; height=" + deviceHeight + "; authKey=" + authKey + ")"
         webView.customUserAgent = (UIWebView().stringByEvaluatingJavaScript(from: "navigator.userAgent") ?? "") + customUserAgent
         view = webView
     }
@@ -68,13 +81,42 @@ class ViewController: UIViewController, WKUIDelegate, WKNavigationDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        let text = "I like what I see."
+        
+        // iOS TTS
+        utterance = AVSpeechUtterance(string: text)
+//        utterance.voice = AVSpeechSynthesisVoice(language: "en-GB")
+//        print(AVSpeechSynthesisVoice.speechVoices())
+//        synthesizer.speak(utterance)
+        
+        // Instantiate IBM TTS
+//        textToSpeech = TextToSpeech(
+//            username: Credentials.TextToSpeechUsername,
+//            password: Credentials.TextToSpeechPassword
+//        )
+//        talk(text: "This is a call to the talk method.")
+        
         let uuid = UIDevice.current.identifierForVendor?.uuidString
-        os_log("UUID: %@", type: .info, uuid!)
-        let myURL = URL(string: "http://uslce.games.ziquid.com/stlouis/bounce/" + uuid!)
+        if UIDevice.current.orientation.isLandscape {
+            uuidPrefix = "p:"
+        } else {
+            uuidPrefix = ""
+        }
+        os_log("UUID: %@", type: .info, uuidPrefix + uuid!)
+        // #ifdef DEBUG
+//        let myURL = URL(string: "http://usl15.dd:8083/stlouis/bounce/" + uuid!)
+        // #else
+         let myURL = URL(string: "http://uslce.games.ziquid.com/stlouis/bounce/" + uuid!)
+        // #endif
         let myRequest = URLRequest(url: myURL!)
         webView.navigationDelegate = self
         webView.load(myRequest)
         webView.allowsBackForwardNavigationGestures = false
+    }
+    
+    override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
+        super.viewWillTransition(to: size, with: coordinator)
+        self.viewDidLoad() // reload view
     }
 
     func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
@@ -93,6 +135,53 @@ class ViewController: UIViewController, WKUIDelegate, WKNavigationDelegate {
         }
     }
     
+//    func webView(_ webView: WKWebView, didCommit navigation: WKNavigation!)
+//    {
+//        let url = webView.url?.absoluteString
+//        print("---didcommit() Hitted URL--->\(url!)") // here you are getting URL
+//    }
+    
+    func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+//        let url = webView.url?.absoluteString
+//        print("---didFinish() Hitted URL--->\(url!)") // here you are getting URL
+        webView.evaluateJavaScript("Drupal.settings.stlouis.speech") { (result, error) in
+            if (error == nil) {
+                if result != nil {
+//                    self.talk(text: result as! String)
+                }
+            }
+            else {
+//                print("cannot find stlouis speech because of \(String(describing: error))")
+//                os_log("error: %@", type: .error, error! as CVarArg);
+            }
+        }
+    }
+    
+    func talk(text: String) {
+        utterance = AVSpeechUtterance(string: text)
+//        utterance.voice = AVSpeechSynthesisVoice(language: "en-GB")
+        //        print(AVSpeechSynthesisVoice.speechVoices())
+//                synthesizer.speak(utterance)
+        
+        // Synthesize the text
+//        let failure = { (error: Error) in print(error) }
+//        let voice = "en-US_MichaelVoice"
+//        textToSpeech.synthesize(
+//            text: text,
+//            accept: "audio/wav",
+//            voice: voice,
+//            failure: failure)
+//        {
+//            data in
+//            do {
+//                self.player = try AVAudioPlayer(data: data)
+//                self.player!.play()
+//            } catch {
+//                print("Failed to create audio player.")
+//            }
+//        }
+    }
+    
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
@@ -109,3 +198,4 @@ extension Bundle {
         return infoDictionary?["CFBundleVersion"] as? String
     }
 }
+

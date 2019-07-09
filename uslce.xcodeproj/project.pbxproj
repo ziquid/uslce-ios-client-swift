@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		7C2A48882161B0BA000766AD /* Credentials.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C2A48872161B0BA000766AD /* Credentials.swift */; };
+		7C2A488A2161B285000766AD /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7C2A48892161B285000766AD /* StoreKit.framework */; };
 		7C9EE2DD204B4E99002A4CD0 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C9EE2DC204B4E99002A4CD0 /* AppDelegate.swift */; };
 		7C9EE2DF204B4E99002A4CD0 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C9EE2DE204B4E99002A4CD0 /* ViewController.swift */; };
 		7C9EE2E2204B4E99002A4CD0 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 7C9EE2E0204B4E99002A4CD0 /* Main.storyboard */; };
@@ -15,6 +17,10 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		7C1AF53E22D0544600F20F86 /* uslce.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = uslce.entitlements; sourceTree = "<group>"; };
+		7C2A48812161AC26000766AD /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = file.bplist; name = Info.plist; path = Carthage/Build/iOS/TextToSpeechV1.framework/Info.plist; sourceTree = "<group>"; };
+		7C2A48872161B0BA000766AD /* Credentials.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Credentials.swift; sourceTree = "<group>"; };
+		7C2A48892161B285000766AD /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
 		7C9EE2D9204B4E99002A4CD0 /* uslce.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = uslce.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		7C9EE2DC204B4E99002A4CD0 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		7C9EE2DE204B4E99002A4CD0 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -29,17 +35,28 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7C2A488A2161B285000766AD /* StoreKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		7C2A487E2161ABFF000766AD /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				7C2A48892161B285000766AD /* StoreKit.framework */,
+				7C2A48812161AC26000766AD /* Info.plist */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		7C9EE2D0204B4E99002A4CD0 = {
 			isa = PBXGroup;
 			children = (
 				7C9EE2DB204B4E99002A4CD0 /* uslce */,
 				7C9EE2DA204B4E99002A4CD0 /* Products */,
+				7C2A487E2161ABFF000766AD /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -54,6 +71,8 @@
 		7C9EE2DB204B4E99002A4CD0 /* uslce */ = {
 			isa = PBXGroup;
 			children = (
+				7C1AF53E22D0544600F20F86 /* uslce.entitlements */,
+				7C2A48872161B0BA000766AD /* Credentials.swift */,
 				7C9EE2DC204B4E99002A4CD0 /* AppDelegate.swift */,
 				7C9EE2DE204B4E99002A4CD0 /* ViewController.swift */,
 				7C9EE2E0204B4E99002A4CD0 /* Main.storyboard */,
@@ -96,7 +115,19 @@
 				TargetAttributes = {
 					7C9EE2D8204B4E99002A4CD0 = {
 						CreatedOnToolsVersion = 9.2;
+						LastSwiftMigration = 1000;
 						ProvisioningStyle = Automatic;
+						SystemCapabilities = {
+							com.apple.GameCenter.iOS = {
+								enabled = 0;
+							};
+							com.apple.InAppPurchase = {
+								enabled = 1;
+							};
+							com.apple.Push = {
+								enabled = 1;
+							};
+						};
 					};
 				};
 			};
@@ -136,6 +167,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7C2A48882161B0BA000766AD /* Credentials.swift in Sources */,
 				7C9EE2DF204B4E99002A4CD0 /* ViewController.swift in Sources */,
 				7C9EE2DD204B4E99002A4CD0 /* AppDelegate.swift in Sources */,
 			);
@@ -213,7 +245,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.3;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
@@ -266,7 +298,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.3;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = iphoneos;
 				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
@@ -278,14 +310,23 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = uslce/uslce.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 5393KJA27K;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Carthage/Build/iOS",
+				);
 				INFOPLIST_FILE = uslce/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 10.3;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Carthage/Build/iOS/TextToSpeechV1.framework",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.ziquid.uslce;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 4.0;
+				SWIFT_VERSION = 4.2;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
@@ -294,14 +335,23 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = uslce/uslce.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 5393KJA27K;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Carthage/Build/iOS",
+				);
 				INFOPLIST_FILE = uslce/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 10.3;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Carthage/Build/iOS/TextToSpeechV1.framework",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.ziquid.uslce;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 4.0;
+				SWIFT_VERSION = 4.2;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
