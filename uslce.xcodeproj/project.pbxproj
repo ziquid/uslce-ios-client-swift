@@ -14,6 +14,7 @@
 		7C9EE2E2204B4E99002A4CD0 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 7C9EE2E0204B4E99002A4CD0 /* Main.storyboard */; };
 		7C9EE2E4204B4E99002A4CD0 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7C9EE2E3204B4E99002A4CD0 /* Assets.xcassets */; };
 		7C9EE2E7204B4E99002A4CD0 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 7C9EE2E5204B4E99002A4CD0 /* LaunchScreen.storyboard */; };
+		7CC54699233864070019E3A1 /* In the air tonight teaser.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 7CC54698233864070019E3A1 /* In the air tonight teaser.mp3 */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -28,6 +29,7 @@
 		7C9EE2E3204B4E99002A4CD0 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		7C9EE2E6204B4E99002A4CD0 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		7C9EE2E8204B4E99002A4CD0 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		7CC54698233864070019E3A1 /* In the air tonight teaser.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = "In the air tonight teaser.mp3"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -47,6 +49,7 @@
 			children = (
 				7C2A48892161B285000766AD /* StoreKit.framework */,
 				7C2A48812161AC26000766AD /* Info.plist */,
+				7CC54698233864070019E3A1 /* In the air tonight teaser.mp3 */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -154,6 +157,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7CC54699233864070019E3A1 /* In the air tonight teaser.mp3 in Resources */,
 				7C9EE2E7204B4E99002A4CD0 /* LaunchScreen.storyboard in Resources */,
 				7C9EE2E4204B4E99002A4CD0 /* Assets.xcassets in Resources */,
 				7C9EE2E2204B4E99002A4CD0 /* Main.storyboard in Resources */,
@@ -312,6 +316,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = uslce/uslce.entitlements;
 				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 15;
 				DEVELOPMENT_TEAM = 5393KJA27K;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -324,6 +329,7 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/Carthage/Build/iOS/TextToSpeechV1.framework",
 				);
+				MARKETING_VERSION = 0.9.4;
 				PRODUCT_BUNDLE_IDENTIFIER = com.ziquid.uslce;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 4.2;
@@ -337,6 +343,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = uslce/uslce.entitlements;
 				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 15;
 				DEVELOPMENT_TEAM = 5393KJA27K;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -349,6 +356,7 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/Carthage/Build/iOS/TextToSpeechV1.framework",
 				);
+				MARKETING_VERSION = 0.9.4;
 				PRODUCT_BUNDLE_IDENTIFIER = com.ziquid.uslce;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 4.2;

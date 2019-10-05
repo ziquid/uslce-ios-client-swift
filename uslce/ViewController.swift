@@ -15,7 +15,7 @@ import os.log
 class ViewController: UIViewController, WKUIDelegate, WKNavigationDelegate {
 
     var webView: WKWebView!
-    var uuidPrefix = ""
+    var game = ""
     
     // iOS TTS
     var utterance: AVSpeechUtterance = AVSpeechUtterance(string: "");
@@ -23,7 +23,7 @@ class ViewController: UIViewController, WKUIDelegate, WKNavigationDelegate {
     
     // IBM Text to Speech service object
 //    var textToSpeech: TextToSpeech!
-    var player: AVAudioPlayer?
+    var soundPlayer: AVAudioPlayer?
     
     override func loadView() {
         let webConfiguration = WKWebViewConfiguration()
@@ -81,10 +81,10 @@ class ViewController: UIViewController, WKUIDelegate, WKNavigationDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        let text = "I like what I see."
+//        let text = "I like what I see."
         
         // iOS TTS
-        utterance = AVSpeechUtterance(string: text)
+//        utterance = AVSpeechUtterance(string: text)
 //        utterance.voice = AVSpeechSynthesisVoice(language: "en-GB")
 //        print(AVSpeechSynthesisVoice.speechVoices())
 //        synthesizer.speak(utterance)
@@ -98,17 +98,18 @@ class ViewController: UIViewController, WKUIDelegate, WKNavigationDelegate {
         
         let uuid = UIDevice.current.identifierForVendor?.uuidString
         if UIDevice.current.orientation.isLandscape {
-            uuidPrefix = "p:"
+            game = "usl_esa"
         } else {
-            uuidPrefix = ""
+            game = "stlouis"
         }
-        os_log("UUID: %@", type: .info, uuidPrefix + uuid!)
-        // #ifdef DEBUG
-//        let myURL = URL(string: "http://usl15.dd:8083/stlouis/bounce/" + uuid!)
-        // #else
-         let myURL = URL(string: "http://uslce.games.ziquid.com/stlouis/bounce/" + uuid!)
-        // #endif
-        let myRequest = URLRequest(url: myURL!)
+//        os_log("UUID: %@", type: .info, uuidPrefix + uuid!)
+//        #ifdef DEBUG
+//              let myURL = "http://usl15.dd:8083/" + game + "/bounce/" + uuid!
+//        #else
+            let myURL = "http://uslce.games.ziquid.com/" + game + "/bounce/" + uuid!
+//        #endif
+        os_log("URL: %@", type: .info, myURL)
+        let myRequest = URLRequest(url: URL(string: myURL)!)
         webView.navigationDelegate = self
         webView.load(myRequest)
         webView.allowsBackForwardNavigationGestures = false
@@ -135,16 +136,10 @@ class ViewController: UIViewController, WKUIDelegate, WKNavigationDelegate {
         }
     }
     
-//    func webView(_ webView: WKWebView, didCommit navigation: WKNavigation!)
-//    {
-//        let url = webView.url?.absoluteString
-//        print("---didcommit() Hitted URL--->\(url!)") // here you are getting URL
-//    }
-    
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
 //        let url = webView.url?.absoluteString
 //        print("---didFinish() Hitted URL--->\(url!)") // here you are getting URL
-        webView.evaluateJavaScript("Drupal.settings.stlouis.speech") { (result, error) in
+        webView.evaluateJavaScript("Drupal.settings.zg.speech") { (result, error) in
             if (error == nil) {
                 if result != nil {
 //                    self.talk(text: result as! String)
@@ -153,6 +148,18 @@ class ViewController: UIViewController, WKUIDelegate, WKNavigationDelegate {
             else {
 //                print("cannot find stlouis speech because of \(String(describing: error))")
 //                os_log("error: %@", type: .error, error! as CVarArg);
+            }
+        }
+        webView.evaluateJavaScript("Drupal.settings.zg.sound") { (result, error) in
+            if (error == nil) {
+                if result != nil {
+                    let soundFile = (result as! String)
+                    self.playSound(sound: soundFile)
+                }
+            }
+            else {
+                print("cannot find zg sound because of \(String(describing: error))")
+                os_log("error: %@", type: .error, error! as CVarArg);
             }
         }
     }
@@ -182,11 +189,28 @@ class ViewController: UIViewController, WKUIDelegate, WKNavigationDelegate {
 //        }
     }
     
+    func playSound(sound: String) {
+//        do {
+            let soundUrl = Bundle.main.url(forResource: sound, withExtension: "mp3")!
+            print("Attempting to play sound \(String(describing: sound))")
+        
+//        } catch let error {
+//            print(error.localizedDescription)
+//            return
+//        }
+
+        do {
+            soundPlayer = try AVAudioPlayer(contentsOf: soundUrl)
+            soundPlayer?.play()
+        } catch {
+            // couldn't load file :(
+        }
+    }
+    
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
-
 
 }
 
