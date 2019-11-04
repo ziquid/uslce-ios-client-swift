@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		7C2A48882161B0BA000766AD /* Credentials.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C2A48872161B0BA000766AD /* Credentials.swift */; };
 		7C2A488A2161B285000766AD /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7C2A48892161B285000766AD /* StoreKit.framework */; };
+		7C7344122352AF9F00BD919B /* mr roboto intro.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 7C7344112352AF9F00BD919B /* mr roboto intro.mp3 */; };
+		7C7344142353BD3C00BD919B /* Uprising intro.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 7C7344132353BD3C00BD919B /* Uprising intro.mp3 */; };
 		7C9EE2DD204B4E99002A4CD0 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C9EE2DC204B4E99002A4CD0 /* AppDelegate.swift */; };
 		7C9EE2DF204B4E99002A4CD0 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C9EE2DE204B4E99002A4CD0 /* ViewController.swift */; };
 		7C9EE2E2204B4E99002A4CD0 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 7C9EE2E0204B4E99002A4CD0 /* Main.storyboard */; };
@@ -22,6 +24,8 @@
 		7C2A48812161AC26000766AD /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = file.bplist; name = Info.plist; path = Carthage/Build/iOS/TextToSpeechV1.framework/Info.plist; sourceTree = "<group>"; };
 		7C2A48872161B0BA000766AD /* Credentials.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Credentials.swift; sourceTree = "<group>"; };
 		7C2A48892161B285000766AD /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
+		7C7344112352AF9F00BD919B /* mr roboto intro.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = "mr roboto intro.mp3"; sourceTree = "<group>"; };
+		7C7344132353BD3C00BD919B /* Uprising intro.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = "Uprising intro.mp3"; sourceTree = "<group>"; };
 		7C9EE2D9204B4E99002A4CD0 /* uslce.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = uslce.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		7C9EE2DC204B4E99002A4CD0 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		7C9EE2DE204B4E99002A4CD0 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -49,7 +53,6 @@
 			children = (
 				7C2A48892161B285000766AD /* StoreKit.framework */,
 				7C2A48812161AC26000766AD /* Info.plist */,
-				7CC54698233864070019E3A1 /* In the air tonight teaser.mp3 */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -57,6 +60,9 @@
 		7C9EE2D0204B4E99002A4CD0 = {
 			isa = PBXGroup;
 			children = (
+				7C7344112352AF9F00BD919B /* mr roboto intro.mp3 */,
+				7CC54698233864070019E3A1 /* In the air tonight teaser.mp3 */,
+				7C7344132353BD3C00BD919B /* Uprising intro.mp3 */,
 				7C9EE2DB204B4E99002A4CD0 /* uslce */,
 				7C9EE2DA204B4E99002A4CD0 /* Products */,
 				7C2A487E2161ABFF000766AD /* Frameworks */,
@@ -158,7 +164,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				7CC54699233864070019E3A1 /* In the air tonight teaser.mp3 in Resources */,
+				7C7344122352AF9F00BD919B /* mr roboto intro.mp3 in Resources */,
 				7C9EE2E7204B4E99002A4CD0 /* LaunchScreen.storyboard in Resources */,
+				7C7344142353BD3C00BD919B /* Uprising intro.mp3 in Resources */,
 				7C9EE2E4204B4E99002A4CD0 /* Assets.xcassets in Resources */,
 				7C9EE2E2204B4E99002A4CD0 /* Main.storyboard in Resources */,
 			);
@@ -316,7 +324,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = uslce/uslce.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 15;
+				CURRENT_PROJECT_VERSION = 17;
 				DEVELOPMENT_TEAM = 5393KJA27K;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -329,9 +337,10 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/Carthage/Build/iOS/TextToSpeechV1.framework",
 				);
-				MARKETING_VERSION = 0.9.4;
+				MARKETING_VERSION = 0.9.5.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.ziquid.uslce;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTS_MACCATALYST = NO;
 				SWIFT_VERSION = 4.2;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -343,7 +352,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = uslce/uslce.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 15;
+				CURRENT_PROJECT_VERSION = 17;
 				DEVELOPMENT_TEAM = 5393KJA27K;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -356,9 +365,10 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/Carthage/Build/iOS/TextToSpeechV1.framework",
 				);
-				MARKETING_VERSION = 0.9.4;
+				MARKETING_VERSION = 0.9.5.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.ziquid.uslce;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTS_MACCATALYST = NO;
 				SWIFT_VERSION = 4.2;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};

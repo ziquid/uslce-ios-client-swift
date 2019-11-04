@@ -153,8 +153,15 @@ class ViewController: UIViewController, WKUIDelegate, WKNavigationDelegate {
         webView.evaluateJavaScript("Drupal.settings.zg.sound") { (result, error) in
             if (error == nil) {
                 if result != nil {
-                    let soundFile = (result as! String)
-                    self.playSound(sound: soundFile)
+//                    let soundFile = (result as! String)
+                    let soundFile = "http://usl15.dd:8083/sites/default/files/sounds/mr roboto intro.mp3"
+                    self.checkIfLinkExists(withLink: soundFile) {
+                        [weak self] downloadedURL in
+                        guard let self = self else {
+                            return
+                        }
+                        self.playUrl(url: downloadedURL)
+                    }
                 }
             }
             else {
@@ -190,20 +197,75 @@ class ViewController: UIViewController, WKUIDelegate, WKNavigationDelegate {
     }
     
     func playSound(sound: String) {
-//        do {
-            let soundUrl = Bundle.main.url(forResource: sound, withExtension: "mp3")!
-            print("Attempting to play sound \(String(describing: sound))")
-        
-//        } catch let error {
-//            print(error.localizedDescription)
-//            return
-//        }
+        print("Attempting to play sound \(String(describing: sound))")
+        let soundUrl = Bundle.main.url(forResource: sound, withExtension: "mp3")!
+        playUrl(url: soundUrl)
+    }
+
+    func playUrl(url: URL) {
+        print("Attempting to play sound from URL \(url)")
 
         do {
-            soundPlayer = try AVAudioPlayer(contentsOf: soundUrl)
+            soundPlayer = try AVAudioPlayer(contentsOf: url)
+            soundPlayer?.prepareToPlay()
+//            soundPlayer?.delegate = self
             soundPlayer?.play()
-        } catch {
-            // couldn't load file :(
+//            let percentage = (soundPlayer?.currentTime ?? 0)/(soundPlayer?.duration ?? 1)
+//            DispatchQueue.main.async {
+                // do what ever you want with that "percentage"
+//            }
+
+        } catch _ {
+            soundPlayer = nil
+        }
+
+    }
+
+    func downloadFile(withUrl url: URL, andFilePath filePath: URL, completion: @escaping ((_ filePath: URL)->Void)) {
+        print("Attempting to download file \(String(describing: url)) at path \(String(describing: filePath))")
+        DispatchQueue.global(qos: .background).async {
+            do {
+                let data = try Data.init(contentsOf: url)
+                try data.write(to: filePath, options: .atomic)
+                print("saved at \(filePath.absoluteString)")
+                DispatchQueue.main.async {
+                    completion(filePath)
+                }
+            }
+            catch {
+                print("an error happened while downloading or saving the file")
+            }
+        }
+    }
+    
+    func checkIfLinkExists(withLink link: String, completion: @escaping ((_ filePath: URL)->Void)) {
+        print("Checking to see if link exists: \(link)")
+        let urlString = link.addingPercentEncoding(withAllowedCharacters: CharacterSet.urlQueryAllowed)
+        if let url  = URL.init(string: urlString ?? "") {
+            let fileManager = FileManager.default
+            if let documentDirectory = try? fileManager.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false) {
+                let filePath = documentDirectory.appendingPathComponent(url.lastPathComponent, isDirectory: false)
+                do {
+                    if try filePath.checkResourceIsReachable() {
+                        print("file already exists; no download needed.")
+                        completion(filePath)
+                    }
+                    else {
+                        print("file doesnt exist; attempting download.")
+                        downloadFile(withUrl: url, andFilePath: filePath, completion: completion)
+                    }
+                }
+                catch {
+                    print("file doesnt exist; attempting download.")
+                    downloadFile(withUrl: url, andFilePath: filePath, completion: completion)
+                }
+            }
+            else {
+                 print("error: cannot find document directory.")
+            }
+        }
+        else {
+            print("error: url isnt valid.")
         }
     }
     
