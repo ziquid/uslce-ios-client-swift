@@ -153,8 +153,8 @@ class ViewController: UIViewController, WKUIDelegate, WKNavigationDelegate {
         webView.evaluateJavaScript("Drupal.settings.zg.sound") { (result, error) in
             if (error == nil) {
                 if result != nil {
-//                    let soundFile = (result as! String)
-                    let soundFile = "http://usl15.dd:8083/sites/default/files/sounds/mr roboto intro.mp3"
+                    let soundFile = (result as! String)
+//                    let soundFile = "http://usl15.dd:8083/sites/default/files/sounds/mr roboto intro.mp3"
                     self.checkIfLinkExists(withLink: soundFile) {
                         [weak self] downloadedURL in
                         guard let self = self else {
