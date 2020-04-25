@@ -16,23 +16,90 @@ class ViewController: UIViewController, WKUIDelegate, WKNavigationDelegate {
 
     var webView: WKWebView!
     var game = ""
-    
+
     // iOS TTS
     var utterance: AVSpeechUtterance = AVSpeechUtterance(string: "");
     let synthesizer = AVSpeechSynthesizer()
-    
+
     // IBM Text to Speech service object
 //    var textToSpeech: TextToSpeech!
     var soundPlayer: AVAudioPlayer?
-    
+
     override func loadView() {
         let webConfiguration = WKWebViewConfiguration()
         webView = WKWebView(frame: .zero, configuration: webConfiguration)
         webView.contentMode = .scaleAspectFill
         webView.uiDelegate = self
-        
+
         // Clear caches.
         URLCache.shared.removeAllCachedResponses()
+
+        // Set user agent.
+//        var deviceType = "iPhone"
+//        switch UIDevice.current.userInterfaceIdiom {
+//            case .phone:
+//                deviceType = "iPhone"
+//                break
+//            case .pad:
+//                deviceType = "iPad"
+//                break
+//            case .unspecified:
+//                deviceType = "iUnknown"
+//                break
+//            case .tv:
+//                deviceType = "appleTV"
+//                break
+//            case .carPlay:
+//                deviceType = "carPlay"
+//                break
+//        }
+//
+//        let defaults = UserDefaults.standard
+//        let authKeyWrapped = defaults.string(forKey: "authKey")
+//        var authKey = ""
+//        var deviceOrientation = "portrait"
+//        if let authKeyTest = authKeyWrapped /* as? String */ {
+//            authKey = authKeyTest
+//            os_log("retrieved authKey: %@", type: .info, authKey)
+//        }
+//        else {
+//            authKey = UUID().uuidString
+//            defaults.set(authKey, forKey: "authKey")
+//            os_log("new authKey: %@", type: .info, authKey)
+//        }
+//
+//        let versionStr = deviceType + "/" + Bundle.main.releaseVersionNumber! + "/" + Bundle.main.buildVersionNumber!
+//        let deviceWidth = (UIWebView().stringByEvaluatingJavaScript(from: "screen.width") ?? "320")
+//        os_log("screen width: %@", type: .info, deviceWidth);
+//        let deviceHeight = (UIWebView().stringByEvaluatingJavaScript(from: "screen.height") ?? "480")
+//        os_log("screen height: %@", type: .info, deviceHeight);
+//        if UIDevice.current.orientation.isLandscape {
+//            deviceOrientation = "landscape";
+//        }
+//        os_log("device orientation: %@", type: .info, deviceOrientation);
+//        let customUserAgent = " (com.ziquid.uslce; " + versionStr + "; width=" + deviceWidth + "; height=" + deviceHeight +
+//            "; orientation=" + deviceOrientation + "; authKey=" + authKey + ")"
+//        webView.customUserAgent = (UIWebView().stringByEvaluatingJavaScript(from: "navigator.userAgent") ?? "") + customUserAgent
+        view = webView
+    }
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+
+//        let text = "I like what I see."
+
+        // iOS TTS
+//        utterance = AVSpeechUtterance(string: text)
+//        utterance.voice = AVSpeechSynthesisVoice(language: "en-GB")
+//        print(AVSpeechSynthesisVoice.speechVoices())
+//        synthesizer.speak(utterance)
+
+        // Instantiate IBM TTS
+//        textToSpeech = TextToSpeech(
+//            username: Credentials.TextToSpeechUsername,
+//            password: Credentials.TextToSpeechPassword
+//        )
+//        talk(text: "This is a call to the talk method.")
         
         // Set user agent.
         var deviceType = "iPhone"
@@ -53,11 +120,11 @@ class ViewController: UIViewController, WKUIDelegate, WKNavigationDelegate {
                 deviceType = "carPlay"
                 break
         }
-        
+
         let defaults = UserDefaults.standard
         let authKeyWrapped = defaults.string(forKey: "authKey")
         var authKey = ""
-        
+        var deviceOrientation = "portrait"
         if let authKeyTest = authKeyWrapped /* as? String */ {
             authKey = authKeyTest
             os_log("retrieved authKey: %@", type: .info, authKey)
@@ -67,35 +134,20 @@ class ViewController: UIViewController, WKUIDelegate, WKNavigationDelegate {
             defaults.set(authKey, forKey: "authKey")
             os_log("new authKey: %@", type: .info, authKey)
         }
-        
+
         let versionStr = deviceType + "/" + Bundle.main.releaseVersionNumber! + "/" + Bundle.main.buildVersionNumber!
         let deviceWidth = (UIWebView().stringByEvaluatingJavaScript(from: "screen.width") ?? "320")
         os_log("screen width: %@", type: .info, deviceWidth);
         let deviceHeight = (UIWebView().stringByEvaluatingJavaScript(from: "screen.height") ?? "480")
         os_log("screen height: %@", type: .info, deviceHeight);
-        let customUserAgent = " (com.ziquid.uslce; " + versionStr + "; width=" + deviceWidth + "; height=" + deviceHeight + "; authKey=" + authKey + ")"
+        if UIDevice.current.orientation.isLandscape {
+            deviceOrientation = "landscape";
+        }
+        os_log("device orientation: %@", type: .info, deviceOrientation);
+        let customUserAgent = " (com.ziquid.uslce; " + versionStr + "; width=" + deviceWidth + "; height=" + deviceHeight +
+            "; orientation=" + deviceOrientation + "; authKey=" + authKey + ")"
         webView.customUserAgent = (UIWebView().stringByEvaluatingJavaScript(from: "navigator.userAgent") ?? "") + customUserAgent
-        view = webView
-    }
-    
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        
-//        let text = "I like what I see."
-        
-        // iOS TTS
-//        utterance = AVSpeechUtterance(string: text)
-//        utterance.voice = AVSpeechSynthesisVoice(language: "en-GB")
-//        print(AVSpeechSynthesisVoice.speechVoices())
-//        synthesizer.speak(utterance)
-        
-        // Instantiate IBM TTS
-//        textToSpeech = TextToSpeech(
-//            username: Credentials.TextToSpeechUsername,
-//            password: Credentials.TextToSpeechPassword
-//        )
-//        talk(text: "This is a call to the talk method.")
-        
+
         let uuid = UIDevice.current.identifierForVendor?.uuidString
         if UIDevice.current.orientation.isLandscape {
             game = "usl_esa"
@@ -114,8 +166,9 @@ class ViewController: UIViewController, WKUIDelegate, WKNavigationDelegate {
         webView.load(myRequest)
         webView.allowsBackForwardNavigationGestures = false
     }
-    
+
     override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
+        os_log("viewWillTransition!")
         super.viewWillTransition(to: size, with: coordinator)
         self.viewDidLoad() // reload view
     }
@@ -135,10 +188,9 @@ class ViewController: UIViewController, WKUIDelegate, WKNavigationDelegate {
             decisionHandler(.allow)
         }
     }
-    
+
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
 //        let url = webView.url?.absoluteString
-//        print("---didFinish() Hitted URL--->\(url!)") // here you are getting URL
         webView.evaluateJavaScript("Drupal.settings.zg.speech") { (result, error) in
             if (error == nil) {
                 if result != nil {
@@ -170,13 +222,13 @@ class ViewController: UIViewController, WKUIDelegate, WKNavigationDelegate {
             }
         }
     }
-    
+
     func talk(text: String) {
         utterance = AVSpeechUtterance(string: text)
 //        utterance.voice = AVSpeechSynthesisVoice(language: "en-GB")
         //        print(AVSpeechSynthesisVoice.speechVoices())
 //                synthesizer.speak(utterance)
-        
+
         // Synthesize the text
 //        let failure = { (error: Error) in print(error) }
 //        let voice = "en-US_MichaelVoice"
@@ -195,7 +247,7 @@ class ViewController: UIViewController, WKUIDelegate, WKNavigationDelegate {
 //            }
 //        }
     }
-    
+
     func playSound(sound: String) {
         print("Attempting to play sound \(String(describing: sound))")
         let soundUrl = Bundle.main.url(forResource: sound, withExtension: "mp3")!
@@ -237,7 +289,7 @@ class ViewController: UIViewController, WKUIDelegate, WKNavigationDelegate {
             }
         }
     }
-    
+
     func checkIfLinkExists(withLink link: String, completion: @escaping ((_ filePath: URL)->Void)) {
         print("Checking to see if link exists: \(link)")
         let urlString = link.addingPercentEncoding(withAllowedCharacters: CharacterSet.urlQueryAllowed)
@@ -268,7 +320,7 @@ class ViewController: UIViewController, WKUIDelegate, WKNavigationDelegate {
             print("error: url isnt valid.")
         }
     }
-    
+
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
