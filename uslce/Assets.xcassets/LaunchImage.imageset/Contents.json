@@ -1,23 +1,23 @@
 {
   "images" : [
     {
+      "filename" : "USLCE_098_icon_1024.jpg",
       "idiom" : "universal",
-      "filename" : "uslce_094_256.png",
       "scale" : "1x"
     },
     {
+      "filename" : "USLCE_098_icon_1024-1.jpg",
       "idiom" : "universal",
-      "filename" : "uslce_094_512.png",
       "scale" : "2x"
     },
     {
+      "filename" : "USLCE_098_icon_1024-2.jpg",
       "idiom" : "universal",
-      "filename" : "uslce_094_1024.jpg",
       "scale" : "3x"
     }
   ],
   "info" : {
-    "version" : 1,
-    "author" : "xcode"
+    "author" : "xcode",
+    "version" : 1
   }
 }
