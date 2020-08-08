@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		7C2A48882161B0BA000766AD /* Credentials.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C2A48872161B0BA000766AD /* Credentials.swift */; };
-		7C2A488A2161B285000766AD /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7C2A48892161B285000766AD /* StoreKit.framework */; };
 		7C7344122352AF9F00BD919B /* mr roboto intro.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 7C7344112352AF9F00BD919B /* mr roboto intro.mp3 */; };
 		7C7344142353BD3C00BD919B /* Uprising intro.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 7C7344132353BD3C00BD919B /* Uprising intro.mp3 */; };
 		7C9EE2DD204B4E99002A4CD0 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C9EE2DC204B4E99002A4CD0 /* AppDelegate.swift */; };
@@ -17,6 +16,7 @@
 		7C9EE2E4204B4E99002A4CD0 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7C9EE2E3204B4E99002A4CD0 /* Assets.xcassets */; };
 		7C9EE2E7204B4E99002A4CD0 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 7C9EE2E5204B4E99002A4CD0 /* LaunchScreen.storyboard */; };
 		7CC54699233864070019E3A1 /* In the air tonight teaser.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 7CC54698233864070019E3A1 /* In the air tonight teaser.mp3 */; };
+		7CE3F5F824DE1B8900E98F8D /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7C2A48892161B285000766AD /* StoreKit.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -41,7 +41,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				7C2A488A2161B285000766AD /* StoreKit.framework in Frameworks */,
+				7CE3F5F824DE1B8900E98F8D /* StoreKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -124,7 +124,7 @@
 				TargetAttributes = {
 					7C9EE2D8204B4E99002A4CD0 = {
 						CreatedOnToolsVersion = 9.2;
-						LastSwiftMigration = 1000;
+						LastSwiftMigration = 1160;
 						ProvisioningStyle = Automatic;
 						SystemCapabilities = {
 							com.apple.GameCenter.iOS = {
@@ -324,7 +324,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = uslce/uslce.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 19;
+				CURRENT_PROJECT_VERSION = 20;
 				DEVELOPMENT_TEAM = 5393KJA27K;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -337,11 +337,11 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/Carthage/Build/iOS/TextToSpeechV1.framework",
 				);
-				MARKETING_VERSION = 0.9.7;
+				MARKETING_VERSION = 0.9.8;
 				PRODUCT_BUNDLE_IDENTIFIER = com.ziquid.uslce;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTS_MACCATALYST = NO;
-				SWIFT_VERSION = 4.2;
+				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
@@ -352,7 +352,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = uslce/uslce.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 19;
+				CURRENT_PROJECT_VERSION = 20;
 				DEVELOPMENT_TEAM = 5393KJA27K;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -365,11 +365,11 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/Carthage/Build/iOS/TextToSpeechV1.framework",
 				);
-				MARKETING_VERSION = 0.9.7;
+				MARKETING_VERSION = 0.9.8;
 				PRODUCT_BUNDLE_IDENTIFIER = com.ziquid.uslce;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTS_MACCATALYST = NO;
-				SWIFT_VERSION = 4.2;
+				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
