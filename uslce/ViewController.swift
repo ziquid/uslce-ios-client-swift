@@ -33,59 +33,15 @@ class ViewController: UIViewController, WKUIDelegate, WKNavigationDelegate {
 
         // Clear caches.
         URLCache.shared.removeAllCachedResponses()
-
-        // Set user agent.
-//        var deviceType = "iPhone"
-//        switch UIDevice.current.userInterfaceIdiom {
-//            case .phone:
-//                deviceType = "iPhone"
-//                break
-//            case .pad:
-//                deviceType = "iPad"
-//                break
-//            case .unspecified:
-//                deviceType = "iUnknown"
-//                break
-//            case .tv:
-//                deviceType = "appleTV"
-//                break
-//            case .carPlay:
-//                deviceType = "carPlay"
-//                break
-//        }
-//
-//        let defaults = UserDefaults.standard
-//        let authKeyWrapped = defaults.string(forKey: "authKey")
-//        var authKey = ""
-//        var deviceOrientation = "portrait"
-//        if let authKeyTest = authKeyWrapped /* as? String */ {
-//            authKey = authKeyTest
-//            os_log("retrieved authKey: %@", type: .info, authKey)
-//        }
-//        else {
-//            authKey = UUID().uuidString
-//            defaults.set(authKey, forKey: "authKey")
-//            os_log("new authKey: %@", type: .info, authKey)
-//        }
-//
-//        let versionStr = deviceType + "/" + Bundle.main.releaseVersionNumber! + "/" + Bundle.main.buildVersionNumber!
-//        let deviceWidth = (UIWebView().stringByEvaluatingJavaScript(from: "screen.width") ?? "320")
-//        os_log("screen width: %@", type: .info, deviceWidth);
-//        let deviceHeight = (UIWebView().stringByEvaluatingJavaScript(from: "screen.height") ?? "480")
-//        os_log("screen height: %@", type: .info, deviceHeight);
-//        if UIDevice.current.orientation.isLandscape {
-//            deviceOrientation = "landscape";
-//        }
-//        os_log("device orientation: %@", type: .info, deviceOrientation);
-//        let customUserAgent = " (com.ziquid.uslce; " + versionStr + "; width=" + deviceWidth + "; height=" + deviceHeight +
-//            "; orientation=" + deviceOrientation + "; authKey=" + authKey + ")"
-//        webView.customUserAgent = (UIWebView().stringByEvaluatingJavaScript(from: "navigator.userAgent") ?? "") + customUserAgent
         view = webView
     }
 
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        webView.navigationDelegate = self
+        webView.allowsBackForwardNavigationGestures = false
+        print("here we go again!")
+        
 //        let text = "I like what I see."
 
         // iOS TTS
@@ -119,12 +75,19 @@ class ViewController: UIViewController, WKUIDelegate, WKNavigationDelegate {
             case .carPlay:
                 deviceType = "carPlay"
                 break
+        @unknown default:
+                deviceType = "iUnknown"
         }
 
         let defaults = UserDefaults.standard
         let authKeyWrapped = defaults.string(forKey: "authKey")
         var authKey = ""
         var deviceOrientation = "portrait"
+        var deviceWidth = "320"
+        var deviceHeight = "480"
+        var userAgent = "unknown userAgent"
+        var customUserAgent = "unknown customUserAgent"
+        
         if let authKeyTest = authKeyWrapped /* as? String */ {
             authKey = authKeyTest
             os_log("retrieved authKey: %@", type: .info, authKey)
@@ -136,35 +99,59 @@ class ViewController: UIViewController, WKUIDelegate, WKNavigationDelegate {
         }
 
         let versionStr = deviceType + "/" + Bundle.main.releaseVersionNumber! + "/" + Bundle.main.buildVersionNumber!
-        let deviceWidth = (UIWebView().stringByEvaluatingJavaScript(from: "screen.width") ?? "320")
-        os_log("screen width: %@", type: .info, deviceWidth);
-        let deviceHeight = (UIWebView().stringByEvaluatingJavaScript(from: "screen.height") ?? "480")
-        os_log("screen height: %@", type: .info, deviceHeight);
+
+        webView.evaluateJavaScript("screen.width + ''") { (result, error) in
+            if let result = result {
+                os_log("screen.width: %@", type: .debug, result as! CVarArg);
+                deviceWidth = result as! String
+            }
+            else {
+                os_log("screen.width returned error: %@", type: .debug, error! as CVarArg);
+            }
+        }
+        
+        webView.evaluateJavaScript("screen.height + ''") { (result, error) in
+            if let result = result {
+                os_log("screen.height: %@", type: .debug, result as! CVarArg);
+                deviceHeight = result as! String
+            }
+            else {
+                os_log("screen.height returned error: %@", type: .debug, error! as CVarArg);
+            }
+        }
+        
         if UIDevice.current.orientation.isLandscape {
             deviceOrientation = "landscape";
         }
         os_log("device orientation: %@", type: .info, deviceOrientation);
-        let customUserAgent = " (com.ziquid.uslce; " + versionStr + "; width=" + deviceWidth + "; height=" + deviceHeight +
-            "; orientation=" + deviceOrientation + "; authKey=" + authKey + ")"
-        webView.customUserAgent = (UIWebView().stringByEvaluatingJavaScript(from: "navigator.userAgent") ?? "") + customUserAgent
-
+        
         let uuid = UIDevice.current.identifierForVendor?.uuidString
         if UIDevice.current.orientation.isLandscape {
             game = "usl_esa"
         } else {
             game = "stlouis"
         }
-//        os_log("UUID: %@", type: .info, uuidPrefix + uuid!)
-//        #ifdef DEBUG
-//              let myURL = "http://usl15.dd:8083/" + game + "/bounce/" + uuid!
-//        #else
-            let myURL = "http://uslce.games.ziquid.com/" + game + "/bounce/" + uuid!
-//        #endif
+        
+        //        os_log("UUID: %@", type: .info, uuidPrefix + uuid!)
+        //        #ifdef DEBUG
+        //              let myURL = "http://usl15.dd:8083/" + game + "/bounce/" + uuid!
+        //        #else
+        let myURL = "http://uslce.games.ziquid.com/" + game + "/bounce/" + uuid!
+        //        #endif
         os_log("URL: %@", type: .info, myURL)
-        let myRequest = URLRequest(url: URL(string: myURL)!)
-        webView.navigationDelegate = self
-        webView.load(myRequest)
-        webView.allowsBackForwardNavigationGestures = false
+        
+        webView.evaluateJavaScript("navigator.userAgent") { (result, error) in
+            if let result = result {
+                os_log("navigator.userAgent: %@", type: .debug, result as! CVarArg);
+                userAgent = result as! String
+                customUserAgent = " (com.ziquid.uslce; " + versionStr + "; width=" + deviceWidth + "; height=" + deviceHeight +
+                    "; orientation=" + deviceOrientation + "; authKey=" + authKey + ")"
+                os_log("custom user agent: %@", type: .info, customUserAgent as CVarArg)
+                self.webView.customUserAgent = userAgent + customUserAgent
+                let myRequest = URLRequest(url: URL(string: myURL)!)
+                self.webView.load(myRequest)
+            }
+        }
     }
 
     override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
@@ -202,23 +189,23 @@ class ViewController: UIViewController, WKUIDelegate, WKNavigationDelegate {
 //                os_log("error: %@", type: .error, error! as CVarArg);
             }
         }
-        webView.evaluateJavaScript("Drupal.settings.zg.sound") { (result, error) in
+        webView.evaluateJavaScript("Drupal.settings.zg.sound || 'nosound'") { (result, error) in
             if (error == nil) {
-                if result != nil {
+                if let result = result {
                     let soundFile = (result as! String)
-//                    let soundFile = "http://usl15.dd:8083/sites/default/files/sounds/mr roboto intro.mp3"
-                    self.checkIfLinkExists(withLink: soundFile) {
-                        [weak self] downloadedURL in
-                        guard let self = self else {
-                            return
+                    if (soundFile != "nosound") {
+                        self.checkIfLinkExists(withLink: soundFile) {
+                            [weak self] downloadedURL in
+                            guard let self = self else {
+                                return
+                            }
+                            self.playUrl(url: downloadedURL)
                         }
-                        self.playUrl(url: downloadedURL)
                     }
                 }
             }
             else {
-                print("cannot find zg sound because of \(String(describing: error))")
-                os_log("error: %@", type: .error, error! as CVarArg);
+                os_log("cannot find zg sound because of error: %@", type: .error, error! as CVarArg);
             }
         }
     }
