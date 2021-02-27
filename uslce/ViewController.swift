@@ -16,6 +16,8 @@ class ViewController: UIViewController, WKUIDelegate, WKNavigationDelegate {
 
     var webView: WKWebView!
     var game = ""
+    
+    var settingsDict = [String: Any]()
 
     // iOS TTS
     var utterance: AVSpeechUtterance = AVSpeechUtterance(string: "");
@@ -75,8 +77,12 @@ class ViewController: UIViewController, WKUIDelegate, WKNavigationDelegate {
             case .carPlay:
                 deviceType = "carPlay"
                 break
-        @unknown default:
+            case .mac:
+                deviceType = "Mac"
+                break
+            @unknown default:
                 deviceType = "iUnknown"
+                break
         }
 
         let defaults = UserDefaults.standard
@@ -178,6 +184,13 @@ class ViewController: UIViewController, WKUIDelegate, WKNavigationDelegate {
 
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
 //        let url = webView.url?.absoluteString
+        
+        settingsDict = [:]
+        if (self.soundPlayer?.isPlaying != nil) {
+            self.soundPlayer?.stop()
+        }
+        
+        // Speech.
         webView.evaluateJavaScript("Drupal.settings.zg.speech") { (result, error) in
             if (error == nil) {
                 if result != nil {
@@ -189,25 +202,37 @@ class ViewController: UIViewController, WKUIDelegate, WKNavigationDelegate {
 //                os_log("error: %@", type: .error, error! as CVarArg);
             }
         }
-        webView.evaluateJavaScript("Drupal.settings.zg.sound || 'nosound'") { (result, error) in
-            if (error == nil) {
-                if let result = result {
-                    let soundFile = (result as! String)
-                    if (soundFile != "nosound") {
-                        self.checkIfLinkExists(withLink: soundFile) {
-                            [weak self] downloadedURL in
-                            guard let self = self else {
-                                return
-                            }
-                            self.playUrl(url: downloadedURL)
-                        }
-                    }
-                }
-            }
-            else {
-                os_log("cannot find zg sound because of error: %@", type: .error, error! as CVarArg);
-            }
-        }
+        
+        self.getSetting(setting: "sound", callbackIfSet: self.getNumberOfLoops)
+        
+        // Sound played once.
+//        webView.evaluateJavaScript("Drupal.settings.zg.sound") { (result, error) in
+//            if (error == nil) {
+//                if let result = result {
+//                    let soundFile = (result as! String)
+//
+//                    webView.evaluateJavaScript("Drupal.settings.zg.numberOfLoops") { (loopResult, error) in
+//                        if (error == nil) {
+//                            if let loopResult = loopResult {
+//                                let numberOfLoopsString = (loopResult as! String)
+//                                let numberOfLoops = Int(numberOfLoopsString) ?? 0
+//
+//                                self.checkIfLinkExists(withLink: soundFile) {
+//                                    [weak self] downloadedURL in
+//                                    guard let self = self else {
+//                                        return
+//                                    }
+//                                    self.playUrl(url: downloadedURL, numberOfLoops: numberOfLoops)
+//                                }
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//            else {
+////                os_log("cannot find zg sound because of error: %@", type: .error, error! as CVarArg);
+//            }
+//        }
     }
 
     func talk(text: String) {
@@ -234,28 +259,65 @@ class ViewController: UIViewController, WKUIDelegate, WKNavigationDelegate {
 //            }
 //        }
     }
-
-    func playSound(sound: String) {
-        print("Attempting to play sound \(String(describing: sound))")
+    
+    // Get a Drupal setting.
+    func getSetting(setting: String, callbackIfSet: @escaping (String) -> Void) {
+        webView.evaluateJavaScript("Drupal.settings.zg." + setting) { (result, error) in
+//            print("callbackIfSet: \(callbackIfSet)")
+            if (error == nil) {
+                if let result = result {
+                    let resultString = (result as! String)
+                    self.settingsDict[setting] = resultString
+                    print ("settings dictionary: \(self.settingsDict)")
+                    callbackIfSet(resultString)
+                }
+            }
+        }
+    }
+    
+    
+    func getNumberOfLoops(sound: String) {
+        print("getNumberofLoops is called with parameter \(sound)")
+        print ("settings dictionary: \(self.settingsDict)")
+        self.getSetting(setting: "numberOfLoops", callbackIfSet: self.playSoundWithLoops)
+    }
+    
+    func playSoundWithLoops(loops: String) {
+        print("playSoundWithLoops is called with parameter \(loops)")
+        print ("settings dictionary: \(self.settingsDict)")
+        let soundFile = self.settingsDict["sound"] as! String
+        
+        self.checkIfLinkExists(withLink: soundFile) {
+            [weak self] downloadedURL in
+            guard let self = self else {
+                return
+            }
+            self.playUrl(url: downloadedURL, numberOfLoops: Int(loops) ?? 0)
+        }
+    }
+        
+    func playSound(sound: String, numberOfLoops: Int = 0) {
+        print("Attempting to play sound \(String(describing: sound)), looping \(numberOfLoops) times")
         let soundUrl = Bundle.main.url(forResource: sound, withExtension: "mp3")!
-        playUrl(url: soundUrl)
+        playUrl(url: soundUrl, numberOfLoops: numberOfLoops)
     }
 
-    func playUrl(url: URL) {
-        print("Attempting to play sound from URL \(url)")
+    func playUrl(url: URL, numberOfLoops: Int = 0) {
+        print("Attempting to play sound from URL \(url), looping \(numberOfLoops) times")
 
         do {
-            soundPlayer = try AVAudioPlayer(contentsOf: url)
-            soundPlayer?.prepareToPlay()
+            self.soundPlayer = try AVAudioPlayer(contentsOf: url)
+            self.soundPlayer?.prepareToPlay()
+            self.soundPlayer?.numberOfLoops = numberOfLoops
 //            soundPlayer?.delegate = self
-            soundPlayer?.play()
+            self.soundPlayer?.play()
 //            let percentage = (soundPlayer?.currentTime ?? 0)/(soundPlayer?.duration ?? 1)
 //            DispatchQueue.main.async {
                 // do what ever you want with that "percentage"
 //            }
 
         } catch _ {
-            soundPlayer = nil
+            self.soundPlayer = nil
         }
 
     }
