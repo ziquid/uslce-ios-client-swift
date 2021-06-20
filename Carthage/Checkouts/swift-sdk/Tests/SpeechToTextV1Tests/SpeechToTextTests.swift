@@ -1,5 +1,5 @@
 /**
- * Copyright IBM Corporation 2016-2017
+ * (C) Copyright IBM Corp. 2016, 2020.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,8 +23,8 @@ import SpeechToTextV1
 class SpeechToTextTests: XCTestCase {
 
     private var speechToText: SpeechToText!
-    private let timeout: TimeInterval = 10.0
-    private let litePlanMessage = "This feature is not available for the Bluemix Lite plan."
+    private let timeout: TimeInterval = 20.0
+    private let litePlanMessage = "This feature is not available for the IBM Cloud Lite plan."
 
     // MARK: - Test Configuration
 
@@ -35,13 +35,9 @@ class SpeechToTextTests: XCTestCase {
     }
 
     func instantiateSpeechToText() {
-        if let apiKey = WatsonCredentials.SpeechToTextAPIKey {
-            speechToText = SpeechToText(apiKey: apiKey)
-        } else {
-            let username = WatsonCredentials.SpeechToTextUsername
-            let password = WatsonCredentials.SpeechToTextPassword
-            speechToText = SpeechToText(username: username, password: password)
-        }
+        let authenticator = WatsonIAMAuthenticator.init(apiKey: WatsonCredentials.SpeechToTextAPIKey)
+        speechToText = SpeechToText(authenticator: authenticator)
+
         if let url = WatsonCredentials.SpeechToTextURL {
             speechToText.serviceURL = url
         }
@@ -62,6 +58,7 @@ class SpeechToTextTests: XCTestCase {
             ("testCustomWords", testCustomWords),
             ("testAcousticModels", testAcousticModels),
             ("testCustomAudioResources", testCustomAudioResources),
+            ("testGrammarsOperations", testGrammarsOperations),
         ]
     }
 
@@ -70,10 +67,20 @@ class SpeechToTextTests: XCTestCase {
     func lookupOrCreateTestLanguageModel() -> LanguageModel? {
         var languageModel: LanguageModel?
         let expectation = self.expectation(description: "listLanguageModels")
-        let failure = failureExceptLitePlan(expectation: expectation, message: "Failed to lookup languageModel")
-        speechToText.listLanguageModels(failure: failure) {
-            response in
-            languageModel = response.customizations.first { $0.name == "swift-test-model" }
+        speechToText.listLanguageModels {
+            response, error in
+            if let error = error {
+                if !error.localizedDescription.contains(self.litePlanMessage) {
+                    XCTFail("Lookup for languageModel failed: \(error)")
+                }
+                expectation.fulfill()
+                return
+            }
+            guard let result = response?.result else {
+                XCTFail(missingResultMessage)
+                return
+            }
+            languageModel = result.customizations.first { $0.name == "swift-test-model" }
             expectation.fulfill()
         }
         wait(for: [expectation], timeout: timeout)
@@ -83,10 +90,19 @@ class SpeechToTextTests: XCTestCase {
     func createTestLanguageModel() -> LanguageModel? {
         var languageModel: LanguageModel?
         let expectation = self.expectation(description: "createLanguageModel")
-        let options = CreateLanguageModel(name: "swift-test-model", baseModelName: "en-US_BroadbandModel")
-        let failure = failureExceptLitePlan(expectation: expectation)
-        speechToText.createLanguageModel(createLanguageModel: options, failure: failure) {
-            model in
+        speechToText.createLanguageModel(name: "swift-test-model", baseModelName: "en-US_BroadbandModel") {
+            response, error in
+            if let error = error {
+                if !error.localizedDescription.contains(self.litePlanMessage) {
+                    XCTFail("Create for languageModel failed: \(error)")
+                }
+                expectation.fulfill()
+                return
+            }
+            guard let model = response?.result else {
+                XCTFail(missingResultMessage)
+                return
+            }
             languageModel = model
             expectation.fulfill()
         }
@@ -97,10 +113,20 @@ class SpeechToTextTests: XCTestCase {
     func lookupOrCreateTestAcousticModel() -> AcousticModel? {
         var acousticModel: AcousticModel?
         let expectation = self.expectation(description: "listAcousticModels")
-        let failure = failureExceptLitePlan(expectation: expectation, message: "Failed to lookup acousticModel")
-        speechToText.listAcousticModels(failure: failure) {
-            response in
-            acousticModel = response.customizations.first { $0.name == "swift-test-model" }
+        speechToText.listAcousticModels {
+            response, error in
+            if let error = error {
+                if !error.localizedDescription.contains(self.litePlanMessage) {
+                    XCTFail("Lookup for acousticModel failed: \(error)")
+                }
+                expectation.fulfill()
+                return
+            }
+            guard let result = response?.result else {
+                XCTFail(missingResultMessage)
+                return
+            }
+            acousticModel = result.customizations.first { $0.name == "swift-test-model" }
             expectation.fulfill()
         }
         wait(for: [expectation], timeout: timeout)
@@ -110,9 +136,19 @@ class SpeechToTextTests: XCTestCase {
     func createTestAcousticModel() -> AcousticModel? {
         var acousticModel: AcousticModel?
         let expectation = self.expectation(description: "createAcousticModel")
-        let failure = failureExceptLitePlan(expectation: expectation)
-        speechToText.createAcousticModel(name: "swift-test-model", baseModelName: "en-US_BroadbandModel", failure: failure) {
-            model in
+        speechToText.createAcousticModel(name: "swift-test-model", baseModelName: "en-US_BroadbandModel") {
+            response, error in
+            if let error = error {
+                if !error.localizedDescription.contains(self.litePlanMessage) {
+                    XCTFail("Lookup for languageModel failed: \(error)")
+                }
+                expectation.fulfill()
+                return
+            }
+            guard let model = response?.result else {
+                XCTFail(missingResultMessage)
+                return
+            }
             acousticModel = model
             expectation.fulfill()
         }
@@ -123,16 +159,17 @@ class SpeechToTextTests: XCTestCase {
     func addTrainingData(to languageModel: LanguageModel) {
         let expectation = self.expectation(description: "addCorpus")
         let file = Bundle(for: type(of: self)).url(forResource: "healthcare-short", withExtension: "txt")!
-        let failure = { (error: Error) in XCTFail(error.localizedDescription) }
+        let fileData = try! Data(contentsOf: file)
         speechToText.addCorpus(
             customizationID: languageModel.customizationID,
             corpusName: "swift-test-corpus",
-            corpusFile: file,
-            allowOverwrite: true,
-            corpusFileContentType: "plain/text",
-            failure: failure)
-        {
-            expectation.fulfill()
+            corpusFile: fileData,
+            allowOverwrite: true) {
+                _, error in
+                if let error = error {
+                    XCTFail(unexpectedErrorMessage(error))
+                }
+                expectation.fulfill()
         }
         wait(for: [expectation], timeout: timeout)
         waitUntil(languageModel, is: "ready")
@@ -145,11 +182,12 @@ class SpeechToTextTests: XCTestCase {
             customizationID: acousticModel.customizationID,
             audioName: "audio",
             audioResource: audio,
-            contentType: "audio/wav",
-            allowOverwrite: true,
-            failure: failWithError)
-        {
-            expectation.fulfill()
+            contentType: "audio/wav", allowOverwrite: true) {
+                _, error in
+                if let error = error {
+                    XCTFail(unexpectedErrorMessage(error))
+                }
+                expectation.fulfill()
         }
         wait(for: [expectation], timeout: timeout)
         waitUntil(acousticModel, is: "ready")
@@ -172,8 +210,19 @@ class SpeechToTextTests: XCTestCase {
         waitUntil(maxRetries: 12) {
             var hasDesiredStatus = false
             let expectation = self.expectation(description: "getLanguageModel")
-            let failure = { (error: Error) in if !error.localizedDescription.contains("locked") { XCTFail(error.localizedDescription) }}
-            speechToText.getLanguageModel(customizationID: languageModel.customizationID, failure: failure) { model in
+            speechToText.getLanguageModel(customizationID: languageModel.customizationID) {
+                response, error in
+                if let error = error {
+                    if !error.localizedDescription.contains("locked") {
+                        XCTFail(unexpectedErrorMessage(error))
+                    }
+                    expectation.fulfill()
+                    return
+                }
+                guard let model = response?.result else {
+                    XCTFail(missingResultMessage)
+                    return
+                }
                 hasDesiredStatus = (model.status == status)
                 expectation.fulfill()
             }
@@ -186,8 +235,19 @@ class SpeechToTextTests: XCTestCase {
         waitUntil {
             var hasDesiredStatus = false
             let expectation = self.expectation(description: "getAcousticModel")
-            let failure = { (error: Error) in if !error.localizedDescription.contains("locked") { XCTFail(error.localizedDescription) }}
-            speechToText.getAcousticModel(customizationID: acousticModel.customizationID, failure: failure) { model in
+            speechToText.getAcousticModel(customizationID: acousticModel.customizationID) {
+                response, error in
+                if let error = error {
+                    if !error.localizedDescription.contains("locked") {
+                        XCTFail(unexpectedErrorMessage(error))
+                    }
+                    expectation.fulfill()
+                    return
+                }
+                guard let model = response?.result else {
+                    XCTFail(missingResultMessage)
+                    return
+                }
                 hasDesiredStatus = (model.status == status)
                 expectation.fulfill()
             }
@@ -200,8 +260,19 @@ class SpeechToTextTests: XCTestCase {
         waitUntil {
             var hasDesiredStatus = false
             let expectation = self.expectation(description: "getCorpus")
-            let failure = { (error: Error) in if !error.localizedDescription.contains("locked") { XCTFail(error.localizedDescription) }}
-            speechToText.getCorpus(customizationID: languageModel.customizationID, corpusName: corpus, failure: failure) { corpus in
+            speechToText.getCorpus(customizationID: languageModel.customizationID, corpusName: corpus) {
+                response, error in
+                if let error = error {
+                    if !error.localizedDescription.contains("locked") {
+                        XCTFail(unexpectedErrorMessage(error))
+                    }
+                    expectation.fulfill()
+                    return
+                }
+                guard let corpus = response?.result else {
+                    XCTFail(missingResultMessage)
+                    return
+                }
                 hasDesiredStatus = (corpus.status == status)
                 expectation.fulfill()
             }
@@ -210,36 +281,21 @@ class SpeechToTextTests: XCTestCase {
         }
     }
 
-    // MARK: - Helper Functions
-
-    func failWithError(error: Error) {
-        XCTFail("Positive test failed with error: \(error)")
-    }
-
-    func failWithResult<T>(result: T) {
-        XCTFail("Negative test returned a result.")
-    }
-
-    func failWithResult() {
-        XCTFail("Negative test returned a result.")
-    }
-
-    func failureExceptLitePlan(expectation: XCTestExpectation,
-                               message: String = "Positive test failed with error") -> ((Error) -> Void) {
-        return { (error: Error) in
-            if !error.localizedDescription.contains(self.litePlanMessage) {
-                XCTFail("\(message): \(error)")
-            }
-            expectation.fulfill()
-        }
-    }
-
     // MARK: - Models
 
     func testListModels() {
         let expectation = self.expectation(description: "listModels")
-        speechToText.listModels(failure: failWithError) { results in
-            XCTAssertGreaterThan(results.models.count, 0)
+        speechToText.listModels {
+            response, error in
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+                return
+            }
+            guard let result = response?.result else {
+                XCTFail(missingResultMessage)
+                return
+            }
+            XCTAssertGreaterThan(result.models.count, 0)
             expectation.fulfill()
         }
         wait(for: [expectation], timeout: timeout)
@@ -248,7 +304,16 @@ class SpeechToTextTests: XCTestCase {
     func testGetModel() {
         let expectation = self.expectation(description: "getModel")
         let modelID = "en-US_BroadbandModel"
-        speechToText.getModel(modelID: modelID, failure: failWithError) { model in
+        speechToText.getModel(modelID: modelID) {
+            response, error in
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+                return
+            }
+            guard let model = response?.result else {
+                XCTFail(missingResultMessage)
+                return
+            }
             XCTAssertEqual(model.name, modelID)
             expectation.fulfill()
         }
@@ -260,11 +325,19 @@ class SpeechToTextTests: XCTestCase {
     func testRecognizeSessionless() {
         let expectation = self.expectation(description: "recognizeSessionless")
         let audio = try! Data(contentsOf: Bundle(for: type(of: self)).url(forResource: "SpeechSample", withExtension: "wav")!)
-        speechToText.recognize(model: "en-US_BroadbandModel", audio: audio, contentType: "audio/wav", failure: failWithError) {
-            recognitionResults in
+        speechToText.recognize(audio: audio, contentType: "audio/wav", model: "en-US_BroadbandModel", endOfPhraseSilenceTime: 5.0, splitTranscriptAtPhraseEnd: true) {
+            response, error in
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+                return
+            }
+            guard let recognitionResults = response?.result else {
+                XCTFail(missingResultMessage)
+                return
+            }
             XCTAssertNotNil(recognitionResults.results)
             XCTAssertGreaterThan(recognitionResults.results!.count, 0)
-            XCTAssertTrue(recognitionResults.results!.first!.finalResults)
+            XCTAssertTrue(recognitionResults.results!.first!.final)
             XCTAssertGreaterThan(recognitionResults.results!.first!.alternatives.count, 0)
             XCTAssertTrue(recognitionResults.results!.first!.alternatives.first!.transcript.contains("tornadoes"))
             expectation.fulfill()
@@ -280,8 +353,16 @@ class SpeechToTextTests: XCTestCase {
         let expectation1 = self.expectation(description: "createJob")
         let audio = try! Data(contentsOf: Bundle(for: type(of: self)).url(forResource: "SpeechSample", withExtension: "wav")!)
         var job: RecognitionJob!
-        speechToText.createJob(audio: audio, contentType: "audio/wav", model: "en-US_BroadbandModel", failure: failWithError) {
-            result in
+        speechToText.createJob(audio: audio, contentType: "audio/wav", model: "en-US_BroadbandModel") {
+            response, error in
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+                return
+            }
+            guard let result = response?.result else {
+                XCTFail(missingResultMessage)
+                return
+            }
             job = result
             expectation1.fulfill()
         }
@@ -289,7 +370,16 @@ class SpeechToTextTests: XCTestCase {
 
         // check the jobs
         let expectation2 = self.expectation(description: "checkJobs")
-        speechToText.checkJobs(failure: failWithError) { result in
+        speechToText.checkJobs {
+            response, error in
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+                return
+            }
+            guard let result = response?.result else {
+                XCTFail(missingResultMessage)
+                return
+            }
             XCTAssertGreaterThan(result.recognitions.count, 0)
             expectation2.fulfill()
         }
@@ -297,7 +387,16 @@ class SpeechToTextTests: XCTestCase {
 
         // check the job we created
         let expectation3 = self.expectation(description: "checkJob")
-        speechToText.checkJob(id: job.id, failure: failWithError) { result in
+        speechToText.checkJob(id: job.id) {
+            response, error in
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+                return
+            }
+            guard let result = response?.result else {
+                XCTFail(missingResultMessage)
+                return
+            }
             XCTAssertEqual(result.id, job.id)
             expectation3.fulfill()
         }
@@ -306,8 +405,16 @@ class SpeechToTextTests: XCTestCase {
         // register a callback
         let expectation4 = self.expectation(description: "registerCallback")
         let url = "https://watson-test-resources.mybluemix.net/speech-to-text-async/secure/callback"
-        speechToText.registerCallback(callbackUrl: url, userSecret: "ThisIsMySecret", failure: failWithError) {
-            status in
+        speechToText.registerCallback(callbackURL: url, userSecret: "ThisIsMySecret") {
+            response, error in
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+                return
+            }
+            guard let status = response?.result else {
+                XCTFail(missingResultMessage)
+                return
+            }
             XCTAssertEqual(status.url, url)
             expectation4.fulfill()
         }
@@ -315,18 +422,177 @@ class SpeechToTextTests: XCTestCase {
 
         // unregister a callback
         let expectation5 = self.expectation(description: "unregisterCallback")
-        speechToText.unregisterCallback(callbackUrl: url, failure: failWithError) {
+        speechToText.unregisterCallback(callbackURL: url) {
+            _, error in
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+            }
             expectation5.fulfill()
         }
         wait(for: [expectation5], timeout: timeout)
 
         // delete the job we created
         let expectation6 = self.expectation(description: "deleteJob")
-        speechToText.deleteJob(id: job.id, failure: failWithError) {
+        speechToText.deleteJob(id: job.id) {
+            _, error in
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+            }
             expectation6.fulfill()
         }
         wait(for: [expectation6], timeout: timeout)
+    }
 
+    func testAsynchronous2() {
+        // create an asynchronous job
+        let audio = try! Data(contentsOf: Bundle(for: type(of: self)).url(forResource: "SpeechSample", withExtension: "wav")!)
+        var jobID: String!
+
+        let keywords = ["rain", "tornadoes"]
+
+        let expectation1 = self.expectation(description: "createJob")
+        speechToText.createJob(audio: audio, contentType: "audio/wav", model: "en-US_BroadbandModel", resultsTtl: 600, inactivityTimeout: -1, keywords: keywords, keywordsThreshold: 0.75, maxAlternatives: 3, wordAlternativesThreshold: 0.25, wordConfidence: true, timestamps: true, profanityFilter: false, smartFormatting: true) {
+            response, error in
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+                return
+            }
+            guard let result = response?.result else {
+                XCTFail(missingResultMessage)
+                return
+            }
+            jobID = result.id
+            expectation1.fulfill()
+        }
+        wait(for: [expectation1], timeout: timeout)
+
+        // check the job we created
+
+        var status = ""
+        var tries = 0
+
+        while status != RecognitionJob.Status.completed.rawValue {
+            let expectation2 = self.expectation(description: "checkJob")
+            speechToText.checkJob(id: jobID) {
+                response, error in
+                if let error = error {
+                    XCTFail(unexpectedErrorMessage(error))
+                    return
+                }
+                guard let job = response?.result else {
+                    XCTFail(missingResultMessage)
+                    return
+                }
+                XCTAssertEqual(job.id, jobID)
+                status = job.status
+                if status == RecognitionJob.Status.completed.rawValue {
+                    XCTAssertNotNil(job.results)
+                    XCTAssertTrue(job.results?.count ?? 0 > 0)
+                    XCTAssertNotNil(job.results?[0].results)
+                    XCTAssertTrue(job.results?[0].results?.count ?? 0 > 0)
+                    let results0 = job.results?[0].results?[0]
+                    XCTAssertNotNil(results0?.keywordsResult)
+                }
+                expectation2.fulfill()
+            }
+            wait(for: [expectation2], timeout: timeout)
+
+            tries += 1
+            if tries > 8 {
+                XCTFail("Could not train a new classifier. Try again later.")
+                return
+            }
+            sleep(5)
+        }
+
+        // delete the job we created
+        let expectation3 = self.expectation(description: "deleteJob")
+        speechToText.deleteJob(id: jobID) {
+            _, error in
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+            }
+            expectation3.fulfill()
+        }
+        wait(for: [expectation3], timeout: timeout)
+    }
+
+    func testAsynchronousProcessingMetrics() {
+        // create an asynchronous job
+        let audio = try! Data(contentsOf: Bundle(for: type(of: self)).url(forResource: "SpeechSample", withExtension: "wav")!)
+        var jobID: String!
+
+        let expectation1 = self.expectation(description: "createJob")
+        speechToText.createJob(audio: audio, contentType: "audio/wav", model: "en-US_BroadbandModel", processingMetrics: true, processingMetricsInterval: 0.5) {
+            response, error in
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+                return
+            }
+            guard let result = response?.result else {
+                XCTFail(missingResultMessage)
+                return
+            }
+            jobID = result.id
+            expectation1.fulfill()
+        }
+        wait(for: [expectation1], timeout: timeout)
+
+        // check the job we created
+
+        var status = ""
+        var tries = 0
+
+        while status != RecognitionJob.Status.completed.rawValue {
+            let expectation2 = self.expectation(description: "checkJob")
+            speechToText.checkJob(id: jobID) {
+                response, error in
+                if let error = error {
+                    XCTFail(unexpectedErrorMessage(error))
+                    return
+                }
+                guard let job = response?.result else {
+                    XCTFail(missingResultMessage)
+                    return
+                }
+                XCTAssertEqual(job.id, jobID)
+                status = job.status
+                if status == RecognitionJob.Status.completed.rawValue {
+                    XCTAssertNotNil(job.results)
+                    XCTAssertTrue(job.results?.count ?? 0 > 0)
+                    // Check procesing metrics - should be present in all but last result
+                    for results in job.results?.dropLast() ?? [] {
+                        XCTAssertNotNil(results.processingMetrics)
+                    }
+                    // Check final results
+                    let finalResults = job.results?.last
+                    XCTAssertNotNil(finalResults?.results)
+                    XCTAssertTrue(finalResults?.results?.count ?? 0 > 0)
+                    let transcript = finalResults?.results?[0].alternatives[0].transcript
+                    XCTAssertNotNil(transcript)
+                }
+                expectation2.fulfill()
+            }
+            wait(for: [expectation2], timeout: timeout)
+
+            tries += 1
+            if tries > 8 {
+                XCTFail("Could not train a new classifier. Try again later.")
+                return
+            }
+            sleep(5)
+        }
+
+        // delete the job we created
+        let expectation3 = self.expectation(description: "deleteJob")
+        speechToText.deleteJob(id: jobID) {
+            _, error in
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+            }
+            expectation3.fulfill()
+        }
+        wait(for: [expectation3], timeout: timeout)
     }
 
     // MARK: - Custom Language Models
@@ -335,10 +601,20 @@ class SpeechToTextTests: XCTestCase {
 
         // create a language model
         let expectation1 = self.expectation(description: "createLanguageModel")
-        let createLanguageModel = CreateLanguageModel(name: "swift-test-model", baseModelName: "en-US_BroadbandModel", description: "Test model")
         var languageModel: LanguageModel!
-        speechToText.createLanguageModel(createLanguageModel: createLanguageModel,
-                                         failure: failureExceptLitePlan(expectation: expectation1)) { model in
+        speechToText.createLanguageModel(name: "swift-test-model", baseModelName: "en-US_BroadbandModel", description: "Test model") {
+            response, error in
+            if let error = error {
+                if !error.localizedDescription.contains(self.litePlanMessage) {
+                    XCTFail(unexpectedErrorMessage(error))
+                }
+                expectation1.fulfill()
+                return
+            }
+            guard let model = response?.result else {
+                XCTFail(missingResultMessage)
+                return
+            }
             languageModel = model
             expectation1.fulfill()
         }
@@ -351,15 +627,33 @@ class SpeechToTextTests: XCTestCase {
 
         // list the language models
         let expectation2 = self.expectation(description: "listLanguageModels")
-        speechToText.listLanguageModels(language: "en-US", failure: failWithError) { results in
-            XCTAssertTrue(results.customizations.contains { $0.customizationID == languageModel.customizationID })
+        speechToText.listLanguageModels(language: "en-US") {
+            response, error in
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+                return
+            }
+            guard let result = response?.result else {
+                XCTFail(missingResultMessage)
+                return
+            }
+            XCTAssertTrue(result.customizations.contains { $0.customizationID == languageModel.customizationID })
             expectation2.fulfill()
         }
         wait(for: [expectation2], timeout: timeout)
 
         // get the language model
         let expectation3 = self.expectation(description: "getLanguageModel")
-        speechToText.getLanguageModel(customizationID: languageModel.customizationID, failure: failWithError) { model in
+        speechToText.getLanguageModel(customizationID: languageModel.customizationID) {
+            response, error in
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+                return
+            }
+            guard let model = response?.result else {
+                XCTFail(missingResultMessage)
+                return
+            }
             XCTAssertEqual(model.customizationID, languageModel.customizationID)
             expectation3.fulfill()
         }
@@ -370,7 +664,11 @@ class SpeechToTextTests: XCTestCase {
 
         // train the language model
         let expectation4 = self.expectation(description: "trainLanguageModel")
-        speechToText.trainLanguageModel(customizationID: languageModel.customizationID, wordTypeToAdd: "all", customizationWeight: 0.3, failure: failWithError) {
+        speechToText.trainLanguageModel(customizationID: languageModel.customizationID, wordTypeToAdd: "all", customizationWeight: 0.3) {
+            _, error in
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+            }
             expectation4.fulfill()
         }
         wait(for: [expectation4], timeout: timeout)
@@ -380,15 +678,24 @@ class SpeechToTextTests: XCTestCase {
 
         // reset the language model
         let expectation5 = self.expectation(description: "resetLanguageModel")
-        speechToText.resetLanguageModel(customizationID: languageModel.customizationID, failure: failWithError) {
+        speechToText.resetLanguageModel(customizationID: languageModel.customizationID) {
+            _, error in
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+            }
             expectation5.fulfill()
         }
         wait(for: [expectation5], timeout: timeout)
 
         // upgrade the language model
         let expectation6 = self.expectation(description: "upgradeLanguageModel")
-        let failure = { (error: Error) in error.localizedDescription.contains("model is up-to-date") ? expectation6.fulfill() : XCTFail(error.localizedDescription) }
-        speechToText.upgradeLanguageModel(customizationID: languageModel.customizationID, failure: failure) {
+        speechToText.upgradeLanguageModel(customizationID: languageModel.customizationID) {
+            _, error in
+            if let error = error {
+                if !error.localizedDescription.contains("model is up-to-date") {
+                    XCTFail(unexpectedErrorMessage(error))
+                }
+            }
             expectation6.fulfill()
         }
         wait(for: [expectation6], timeout: timeout)
@@ -398,7 +705,11 @@ class SpeechToTextTests: XCTestCase {
 
         // delete the language model
         let expectation7 = self.expectation(description: "deleteLanguageModel")
-        speechToText.deleteLanguageModel(customizationID: languageModel.customizationID, failure: failWithError) {
+        speechToText.deleteLanguageModel(customizationID: languageModel.customizationID) {
+            _, error in
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+            }
             expectation7.fulfill()
         }
         wait(for: [expectation7], timeout: timeout)
@@ -419,7 +730,12 @@ class SpeechToTextTests: XCTestCase {
         let id = languageModel.customizationID
         let corpusName = "test-corpus"
         let file = Bundle(for: type(of: self)).url(forResource: "healthcare-short", withExtension: "txt")!
-        speechToText.addCorpus(customizationID: id, corpusName: corpusName, corpusFile: file, allowOverwrite: true, corpusFileContentType: "plain/text", failure: failWithError) {
+        let fileData = try! Data(contentsOf: file)
+        speechToText.addCorpus(customizationID: id, corpusName: corpusName, corpusFile: fileData, allowOverwrite: true) {
+            _, error in
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+            }
             expectation1.fulfill()
         }
         wait(for: [expectation1], timeout: timeout)
@@ -429,23 +745,48 @@ class SpeechToTextTests: XCTestCase {
 
         // list all corpora
         let expectation2 = self.expectation(description: "listCorpora")
-        speechToText.listCorpora(customizationID: languageModel.customizationID, failure: failWithError) { results in
-            XCTAssertTrue(results.corpora.contains { $0.name == corpusName })
+        speechToText.listCorpora(customizationID: languageModel.customizationID) {
+            response, error in
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+                return
+            }
+            guard let result = response?.result else {
+                XCTFail(missingResultMessage)
+                return
+            }
+            XCTAssertTrue(result.corpora.contains { $0.name == corpusName })
             expectation2.fulfill()
         }
         wait(for: [expectation2], timeout: timeout)
 
         // get the corpus we added
         let expectation3 = self.expectation(description: "getCorpus")
-        speechToText.getCorpus(customizationID: id, corpusName: corpusName, failure: failWithError) { corpus in
+        speechToText.getCorpus(customizationID: id, corpusName: corpusName) {
+            response, error in
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+                return
+            }
+            guard let corpus = response?.result else {
+                XCTFail(missingResultMessage)
+                return
+            }
             XCTAssertEqual(corpus.name, corpusName)
             expectation3.fulfill()
         }
         wait(for: [expectation3], timeout: timeout)
 
+        // we need to make sure the custom model is ready
+        waitUntil(languageModel, is: "ready")
+
         // delete the corpus we added
         let expectation4 = self.expectation(description: "deleteCorpus")
-        speechToText.deleteCorpus(customizationID: id, corpusName: corpusName, failure: failWithError) {
+        speechToText.deleteCorpus(customizationID: id, corpusName: corpusName) {
+            _, error in
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+            }
             expectation4.fulfill()
         }
         wait(for: [expectation4], timeout: timeout)
@@ -461,10 +802,17 @@ class SpeechToTextTests: XCTestCase {
             return
         }
 
+        // make sure the language model is ready
+        waitUntil(languageModel, is: "ready")
+
         // add an array of words
         let expectation2 = self.expectation(description: "addWords")
         let word = CustomWord(word: "helllo", soundsLike: ["hello"], displayAs: "hello")
-        speechToText.addWords(customizationID: languageModel.customizationID, words: [word], failure: failWithError) {
+        speechToText.addWords(customizationID: languageModel.customizationID, words: [word]) {
+            _, error in
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+            }
             expectation2.fulfill()
         }
         wait(for: [expectation2], timeout: timeout)
@@ -474,7 +822,11 @@ class SpeechToTextTests: XCTestCase {
 
         // add a single word
         let expectation3 = self.expectation(description: "addWord")
-        speechToText.addWord(customizationID: languageModel.customizationID, wordName: "worlld", soundsLike: ["world"], displayAs: "world", failure: failWithError) {
+        speechToText.addWord(customizationID: languageModel.customizationID, wordName: "worlld", soundsLike: ["world"], displayAs: "world") {
+            _, error in
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+            }
             expectation3.fulfill()
         }
         wait(for: [expectation3], timeout: timeout)
@@ -484,19 +836,35 @@ class SpeechToTextTests: XCTestCase {
 
         // list all words
         let expectation4 = self.expectation(description: "listWords")
-        speechToText.listWords(customizationID: languageModel.customizationID, wordType: "user", sort: "+alphabetical", failure: failWithError) {
-            results in
-            XCTAssertEqual(results.words.count, 2)
-            XCTAssertTrue(results.words.contains { $0.word == "helllo" })
-            XCTAssertTrue(results.words.contains { $0.word == "worlld" })
+        speechToText.listWords(customizationID: languageModel.customizationID, wordType: "user", sort: "+alphabetical") {
+            response, error in
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+                return
+            }
+            guard let result = response?.result else {
+                XCTFail(missingResultMessage)
+                return
+            }
+            XCTAssertEqual(result.words.count, 2)
+            XCTAssertTrue(result.words.contains { $0.word == "helllo" })
+            XCTAssertTrue(result.words.contains { $0.word == "worlld" })
             expectation4.fulfill()
         }
         wait(for: [expectation4], timeout: timeout)
 
         // get a word that we added
         let expectation5 = self.expectation(description: "getWord")
-        speechToText.getWord(customizationID: languageModel.customizationID, wordName: "helllo", failure: failWithError) {
-            word in
+        speechToText.getWord(customizationID: languageModel.customizationID, wordName: "helllo") {
+            response, error in
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+                return
+            }
+            guard let word = response?.result else {
+                XCTFail(missingResultMessage)
+                return
+            }
             XCTAssertEqual(word.word, "helllo")
             expectation5.fulfill()
         }
@@ -504,11 +872,107 @@ class SpeechToTextTests: XCTestCase {
 
         // delete a word that we added
         let expectation6 = self.expectation(description: "deleteWord")
-        speechToText.deleteWord(customizationID: languageModel.customizationID, wordName: "helllo", failure: failWithError) {
+        speechToText.deleteWord(customizationID: languageModel.customizationID, wordName: "helllo") {
+            _, error in
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+            }
             expectation6.fulfill()
         }
         wait(for: [expectation6], timeout: timeout)
 
+    }
+
+    // MARK: - Grammars
+
+    func testGrammarsOperations() {
+        let expectation1 = self.expectation(description: "addGrammar")
+
+        // create or reuse an existing language model
+        guard let languageModel = lookupOrCreateTestLanguageModel() else {
+            return
+        }
+
+        // we want the language model to be ready
+        waitUntil(languageModel, is: "ready")
+
+        let customizationID = languageModel.customizationID
+        let grammarName = "swift-sdk-test-grammar"
+        let grammarFile = Bundle(for: type(of: self)).url(forResource: "confirm", withExtension: "abnf")!
+        speechToText.addGrammar(
+            customizationID: customizationID,
+            grammarName: grammarName,
+            grammarFile: grammarFile.absoluteString,
+            contentType: "application/srgs",
+            allowOverwrite: true) {
+                _, error in
+                if let error = error {
+                    XCTFail(unexpectedErrorMessage(error))
+                    return
+                }
+                expectation1.fulfill()
+        }
+
+        wait(for: [expectation1], timeout: timeout)
+
+        let expectation2 = self.expectation(description: "getGrammar")
+
+        speechToText.getGrammar(customizationID: customizationID, grammarName: grammarName) {
+            response, error in
+
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+                return
+            }
+            guard let grammar = response?.result else {
+                XCTFail(missingResultMessage)
+                return
+            }
+            XCTAssertEqual(grammar.name, grammarName)
+            expectation2.fulfill()
+        }
+
+        wait(for: [expectation2], timeout: timeout)
+
+        let expectation3 = self.expectation(description: "listGrammars")
+
+        speechToText.listGrammars(customizationID: customizationID) {
+            response, error in
+
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+                return
+            }
+            guard let grammars = response?.result?.grammars else {
+                XCTFail(missingResultMessage)
+                return
+            }
+            XCTAssert(grammars.count > 0)
+            let foundGrammar = grammars.first(where: { grammar -> Bool in
+                grammar.name == grammarName
+            })
+            XCTAssertNotNil(foundGrammar)
+            expectation3.fulfill()
+        }
+
+        wait(for: [expectation3], timeout: timeout)
+
+        let expectation4 = self.expectation(description: "deleteGrammar")
+
+        // Can't delete the grammar until the Language model (with the customizationID) is no longer process-locked
+        waitUntil(languageModel, is: "ready")
+
+        speechToText.deleteGrammar(customizationID: customizationID, grammarName: grammarName) {
+            _, error in
+
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+                return
+            }
+            expectation4.fulfill()
+        }
+
+        wait(for: [expectation4], timeout: timeout)
     }
 
     // MARK: - Custom Acoustic Models
@@ -518,9 +982,19 @@ class SpeechToTextTests: XCTestCase {
         // create an acoustic model
         let expectation1 = self.expectation(description: "createAcousticModel")
         var acousticModel: AcousticModel!
-        speechToText.createAcousticModel(name: "swift-test-model", baseModelName: "en-US_BroadbandModel", description: "test",
-                                         failure: failureExceptLitePlan(expectation: expectation1)) {
-            model in
+        speechToText.createAcousticModel(name: "swift-test-model", baseModelName: "en-US_BroadbandModel", description: "test") {
+            response, error in
+            if let error = error {
+                if !error.localizedDescription.contains(self.litePlanMessage) {
+                    XCTFail(unexpectedErrorMessage(error))
+                }
+                expectation1.fulfill()
+                return
+            }
+            guard let model = response?.result else {
+                XCTFail(missingResultMessage)
+                return
+            }
             acousticModel = model
             expectation1.fulfill()
         }
@@ -533,16 +1007,33 @@ class SpeechToTextTests: XCTestCase {
 
         // list acoustic models
         let expectation2 = self.expectation(description: "listAcousticModels")
-        speechToText.listAcousticModels(language: "en-US", failure: failWithError) {
-            results in
-            XCTAssertTrue(results.customizations.contains { $0.customizationID == acousticModel.customizationID })
+        speechToText.listAcousticModels(language: "en-US") {
+            response, error in
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+                return
+            }
+            guard let result = response?.result else {
+                XCTFail(missingResultMessage)
+                return
+            }
+            XCTAssertTrue(result.customizations.contains { $0.customizationID == acousticModel.customizationID })
             expectation2.fulfill()
         }
         wait(for: [expectation2], timeout: timeout)
 
         // get the acoustic model
         let expectation3 = self.expectation(description: "getAcousticModel")
-        speechToText.getAcousticModel(customizationID: acousticModel.customizationID, failure: failWithError) { model in
+        speechToText.getAcousticModel(customizationID: acousticModel.customizationID) {
+            response, error in
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+                return
+            }
+            guard let model = response?.result else {
+                XCTFail(missingResultMessage)
+                return
+            }
             XCTAssertEqual(model.customizationID, acousticModel.customizationID)
             expectation3.fulfill()
         }
@@ -551,10 +1042,18 @@ class SpeechToTextTests: XCTestCase {
         // add data before training
         addTrainingData(to: acousticModel)
 
+        // we need to make sure that the acoustic model is ready
+        waitUntil(acousticModel, is: "ready")
+
         // train the acoustic model
         let expectation4 = self.expectation(description: "trainAcousticModel")
-        let failure1 = { (error: Error) in error.localizedDescription.contains("audio duration must be between") ? expectation4.fulfill() : XCTFail(error.localizedDescription) }
-        speechToText.trainAcousticModel(customizationID: acousticModel.customizationID, failure: failure1) {
+        speechToText.trainAcousticModel(customizationID: acousticModel.customizationID) {
+            _, error in
+            if let error = error {
+                if !error.localizedDescription.contains("audio duration must be between") {
+                    XCTFail(unexpectedErrorMessage(error))
+                }
+            }
             expectation4.fulfill()
         }
         wait(for: [expectation4], timeout: timeout)
@@ -564,15 +1063,24 @@ class SpeechToTextTests: XCTestCase {
 
         // reset the acoustic model
         let expectation5 = self.expectation(description: "resetAcousticModel")
-        speechToText.resetAcousticModel(customizationID: acousticModel.customizationID, failure: failWithError) {
+        speechToText.resetAcousticModel(customizationID: acousticModel.customizationID) {
+            _, error in
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+            }
             expectation5.fulfill()
         }
         wait(for: [expectation5], timeout: timeout)
 
-        // updgrade the acoustic model
+        // upgrade the acoustic model
         let expectation6 = self.expectation(description: "upgradeAcousticModel")
-        let failure2 = { (error: Error) in error.localizedDescription.contains("model is up-to-date") ? expectation6.fulfill() : XCTFail(error.localizedDescription) }
-        speechToText.upgradeAcousticModel(customizationID: acousticModel.customizationID, failure: failure2) {
+        speechToText.upgradeAcousticModel(customizationID: acousticModel.customizationID) {
+            _, error in
+            if let error = error {
+                if !error.localizedDescription.contains("model is up-to-date") {
+                    XCTFail(unexpectedErrorMessage(error))
+                }
+            }
             expectation6.fulfill()
         }
         wait(for: [expectation6], timeout: timeout)
@@ -582,7 +1090,11 @@ class SpeechToTextTests: XCTestCase {
 
         // delete the acoustic model
         let expectation7 = self.expectation(description: "deleteAcousticModel")
-        speechToText.deleteAcousticModel(customizationID: acousticModel.customizationID, failure: failWithError) {
+        speechToText.deleteAcousticModel(customizationID: acousticModel.customizationID) {
+            _, error in
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+            }
             expectation7.fulfill()
         }
         wait(for: [expectation7], timeout: timeout)
@@ -598,10 +1110,17 @@ class SpeechToTextTests: XCTestCase {
             return
         }
 
+        // we want to make sure the acoustic model is ready
+        waitUntil(acousticModel, is: "ready")
+
         // add audio resource to acoustic model
         let expectation1 = self.expectation(description: "addAudio")
         let audio = try! Data(contentsOf: Bundle(for: type(of: self)).url(forResource: "SpeechSample", withExtension: "wav")!)
-        speechToText.addAudio(customizationID: acousticModel.customizationID, audioName: "audio", audioResource: audio, contentType: "audio/wav", allowOverwrite: true, failure: failWithError) {
+        speechToText.addAudio(customizationID: acousticModel.customizationID, audioName: "audio", audioResource: audio, contentType: "audio/wav", allowOverwrite: true) {
+            _, error in
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+            }
             expectation1.fulfill()
         }
         wait(for: [expectation1], timeout: timeout)
@@ -611,17 +1130,33 @@ class SpeechToTextTests: XCTestCase {
 
         // list audio resources
         let expectation2 = self.expectation(description: "listAudio")
-        speechToText.listAudio(customizationID: acousticModel.customizationID, failure: failWithError) { results in
-            XCTAssertGreaterThan(results.audio.count, 0)
-            XCTAssertGreaterThan(results.totalMinutesOfAudio, 0.0)
+        speechToText.listAudio(customizationID: acousticModel.customizationID) {
+            response, error in
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+                return
+            }
+            guard let result = response?.result else {
+                XCTFail(missingResultMessage)
+                return
+            }
+            XCTAssertGreaterThan(result.audio.count, 0)
             expectation2.fulfill()
         }
         wait(for: [expectation2], timeout: timeout)
 
         // get audio resource
         let expectation3 = self.expectation(description: "getAudio")
-        speechToText.getAudio(customizationID: acousticModel.customizationID, audioName: "audio", failure: failWithError) {
-            audio in
+        speechToText.getAudio(customizationID: acousticModel.customizationID, audioName: "audio") {
+            response, error in
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+                return
+            }
+            guard let audio = response?.result else {
+                XCTFail(missingResultMessage)
+                return
+            }
             XCTAssertEqual(audio.name, "audio")
             expectation3.fulfill()
         }
@@ -629,7 +1164,11 @@ class SpeechToTextTests: XCTestCase {
 
         // delete audio resource
         let expectation4 = self.expectation(description: "deleteAudio")
-        speechToText.deleteAudio(customizationID: acousticModel.customizationID, audioName: "audio", failure: failWithError) {
+        speechToText.deleteAudio(customizationID: acousticModel.customizationID, audioName: "audio") {
+            _, error in
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+            }
             expectation4.fulfill()
         }
         wait(for: [expectation4], timeout: timeout)

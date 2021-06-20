@@ -1,5 +1,5 @@
 /**
- * Copyright IBM Corporation 2016
+ * (C) Copyright IBM Corp. 2016, 2019.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,19 +22,19 @@ import NaturalLanguageClassifierV1
 
 class NaturalLanguageClassifierTests: XCTestCase {
 
-    // Several tests depend upon an already-trained classifier. If the classifier does not exist then use the
-    // API Explorer (watson-api-explorer.mybluemix.net) to create a classifier using the `trained_meta.txt`
-    // and `weather_data_train.csv` files. Be sure to update the `trainedClassifierId` property below!
+    // Several tests depend upon an already-trained classifier. If the classifier does not exist then
+    // create a classifier using the `trained_meta.txt` and `weather_data_train.csv` files. Be sure
+    // to update the `trainedClassifierId` property below!
 
     private var naturalLanguageClassifier: NaturalLanguageClassifier!
-    private let trainedClassifierId = "6b5ab4x398-nlc-95"
+    private let trainedClassifierId = "0af6f2x556-nlc-473"
     private let trainedClassifierName = "swift-sdk-test-classifier - DO NOT DELETE"
     private let temporaryClassifierName = "swift-sdk-temporary-classifier"
 
-    private var metadataFile: URL!
-    private var metadataFileEmpty: URL!
-    private var metadataFileMissingName: URL!
-    private var trainingFile: URL!
+    private var metadataFile: Data!
+    private var metadataFileEmpty: Data!
+    private var metadataFileMissingName: Data!
+    private var trainingFile: Data!
 
     // MARK: - Test Configuration
 
@@ -61,35 +61,15 @@ class NaturalLanguageClassifierTests: XCTestCase {
         ]
     }
 
-    /** Instantiate Natural Langauge Classifier instance. */
     func instantiateNaturalLanguageClassifier() {
-        if let apiKey = WatsonCredentials.NaturalLanguageClassifierAPIKey {
-            naturalLanguageClassifier = NaturalLanguageClassifier(apiKey: apiKey)
-        } else {
-            let username = WatsonCredentials.NaturalLanguageClassifierUsername
-            let password = WatsonCredentials.NaturalLanguageClassifierPassword
-            naturalLanguageClassifier = NaturalLanguageClassifier(username: username, password: password)
-        }
+        let authenticator = WatsonIAMAuthenticator.init(apiKey: WatsonCredentials.NaturalLanguageClassifierAPIKey)
+        naturalLanguageClassifier = NaturalLanguageClassifier(authenticator: authenticator)
+
         if let url = WatsonCredentials.NaturalLanguageClassifierURL {
             naturalLanguageClassifier.serviceURL = url
         }
         naturalLanguageClassifier.defaultHeaders["X-Watson-Learning-Opt-Out"] = "true"
         naturalLanguageClassifier.defaultHeaders["X-Watson-Test"] = "true"
-    }
-
-    /** Fail false negatives. */
-    func failWithError(error: Error) {
-        XCTFail("Positive test failed with error: \(error)")
-    }
-
-    /** Fail false positives. */
-    func failWithResult<T>(result: T) {
-        XCTFail("Negative test returned a result.")
-    }
-
-    /** Fail false positives. */
-    func failWithResult() {
-        XCTFail("Negative test returned a result.")
     }
 
     /** Wait for expectations. */
@@ -113,25 +93,41 @@ class NaturalLanguageClassifierTests: XCTestCase {
     }
 
     /** Load a file used when creating a classifier. */
-    func loadClassifierFile(name: String, withExtension: String) -> URL? {
+    func loadClassifierFile(name: String, withExtension: String) -> Data? {
         #if os(Linux)
-            let url = URL(fileURLWithPath: "Tests/NaturalLanguageClassifierV1Tests/" + name + "." + withExtension)
+        let url = URL(fileURLWithPath: "Tests/NaturalLanguageClassifierV1Tests/" + name + "." + withExtension)
         #else
-            let bundle = Bundle(for: type(of: self))
-            guard let url = bundle.url(forResource: name, withExtension: withExtension) else { return nil }
+        let bundle = Bundle(for: type(of: self))
+        guard let url = bundle.url(forResource: name, withExtension: withExtension) else { return nil }
         #endif
-        return url
+        let data = try? Data(contentsOf: url)
+        return data
     }
 
     // MARK: - Positive Tests
 
     func testCreateAndDelete() {
         let expectation = self.expectation(description: "Create and delete a classifier")
-        naturalLanguageClassifier.createClassifier(metadata: metadataFile, trainingData: trainingFile, failure: failWithError) {
-            classifier in
+        naturalLanguageClassifier.createClassifier(trainingMetadata: metadataFile, trainingData: trainingFile) {
+            response, error in
+
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+                return
+            }
+            guard let classifier = response?.result else {
+                XCTFail(missingResultMessage)
+                return
+            }
+
             XCTAssertEqual(classifier.name, self.temporaryClassifierName)
             XCTAssertEqual(classifier.language, "en")
-            self.naturalLanguageClassifier.deleteClassifier(classifierID: classifier.classifierID, failure: self.failWithError) {
+            self.naturalLanguageClassifier.deleteClassifier(classifierID: classifier.classifierID) {
+                _, error in
+
+                if let error = error {
+                    XCTFail(unexpectedErrorMessage(error))
+                }
                 expectation.fulfill()
             }
         }
@@ -140,11 +136,26 @@ class NaturalLanguageClassifierTests: XCTestCase {
 
     func testCreateAndDeleteClassifierWithoutOptionalName() {
         let expectation = self.expectation(description: "Create and delete a classifier with no name.")
-        naturalLanguageClassifier.createClassifier(metadata: metadataFileMissingName, trainingData: trainingFile, failure: failWithError) {
-            classifier in
+        naturalLanguageClassifier.createClassifier(trainingMetadata: metadataFileMissingName, trainingData: trainingFile) {
+            response, error in
+
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+                return
+            }
+            guard let classifier = response?.result else {
+                XCTFail(missingResultMessage)
+                return
+            }
+
             XCTAssertEqual(classifier.name, nil)
             XCTAssertEqual(classifier.language, "en")
-            self.naturalLanguageClassifier.deleteClassifier(classifierID: classifier.classifierID, failure: self.failWithError) {
+            self.naturalLanguageClassifier.deleteClassifier(classifierID: classifier.classifierID) {
+                _, error in
+
+                if let error = error {
+                    XCTFail(unexpectedErrorMessage(error))
+                }
                 expectation.fulfill()
             }
         }
@@ -153,7 +164,18 @@ class NaturalLanguageClassifierTests: XCTestCase {
 
     func testListClassifiers() {
         let expectation = self.expectation(description: "Get classifiers.")
-        naturalLanguageClassifier.listClassifiers(failure: failWithError) { classifiers in
+        naturalLanguageClassifier.listClassifiers {
+            response, error in
+
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+                return
+            }
+            guard let classifiers = response?.result else {
+                XCTFail(missingResultMessage)
+                return
+            }
+
             XCTAssertGreaterThan(classifiers.classifiers.count, 0)
             expectation.fulfill()
         }
@@ -162,7 +184,17 @@ class NaturalLanguageClassifierTests: XCTestCase {
 
     func testGetClassifier() {
         let expectation = self.expectation(description: "Get classifier.")
-        naturalLanguageClassifier.getClassifier(classifierID: trainedClassifierId, failure: failWithError) { classifier in
+        naturalLanguageClassifier.getClassifier(classifierID: trainedClassifierId) { response, error in
+
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+                return
+            }
+            guard let classifier = response?.result else {
+                XCTFail(missingResultMessage)
+                return
+            }
+
             XCTAssertEqual(classifier.name, self.trainedClassifierName)
             expectation.fulfill()
         }
@@ -171,8 +203,18 @@ class NaturalLanguageClassifierTests: XCTestCase {
 
     func testClassify() {
         let expectation = self.expectation(description: "Classify text.")
-        naturalLanguageClassifier.classify(classifierID: trainedClassifierId, text: "How hot will it be today?", failure: failWithError) {
-            classification in
+        naturalLanguageClassifier.classify(classifierID: trainedClassifierId, text: "How hot will it be today?") {
+            response, error in
+
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+                return
+            }
+            guard let classification = response?.result else {
+                XCTFail(missingResultMessage)
+                return
+            }
+
             XCTAssertEqual(classification.topClass, "temperature")
             XCTAssertNotNil(classification.classes)
             XCTAssertEqual(classification.classes!.count, 2)
@@ -186,8 +228,18 @@ class NaturalLanguageClassifierTests: XCTestCase {
         let text1 = "How hot will it be today?"
         let text2 = "How sunny will it be today?"
         let collection = [ClassifyInput(text: text1), ClassifyInput(text: text2)]
-        naturalLanguageClassifier.classifyCollection(classifierID: trainedClassifierId, collection: collection, failure: failWithError) {
-            classifications in
+        naturalLanguageClassifier.classifyCollection(classifierID: trainedClassifierId, collection: collection) {
+            response, error in
+
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+                return
+            }
+            guard let classifications = response?.result else {
+                XCTFail(missingResultMessage)
+                return
+            }
+
             XCTAssertNotNil(classifications.classifierID)
             XCTAssertEqual(classifications.classifierID, self.trainedClassifierId)
             XCTAssertNotNil(classifications.collection)
@@ -205,53 +257,76 @@ class NaturalLanguageClassifierTests: XCTestCase {
 
     func testCreateClassifierWithMissingMetadata() {
         let expectation = self.expectation(description: "Create a classifier with missing metadata")
-        let failure = { (error: Error) in expectation.fulfill() }
         naturalLanguageClassifier.createClassifier(
-            metadata: metadataFileEmpty,
-            trainingData: trainingFile,
-            failure: failure,
-            success: failWithResult)
+            trainingMetadata: metadataFileEmpty,
+            trainingData: trainingFile
+        ) {
+            _, error in
+
+            if error == nil {
+                XCTFail(missingErrorMessage)
+            }
+            expectation.fulfill()
+        }
         waitForExpectations()
     }
 
     func testClassifyEmptyString() {
         let expectation = self.expectation(description: "Classify and empty string.")
-        let failure = { (error: Error) in expectation.fulfill() }
-        naturalLanguageClassifier.classify(classifierID: trainedClassifierId, text: "", failure: failure, success: failWithResult)
+        naturalLanguageClassifier.classify(classifierID: trainedClassifierId, text: "") {
+            _, error in
+
+            if error == nil {
+                XCTFail(missingErrorMessage)
+            }
+            expectation.fulfill()
+        }
         waitForExpectations()
     }
 
     func testClassifyWithInvalidClassifier() {
         let expectation = self.expectation(description: "Classify using an invalid classifier id.")
-        let failure = { (error: Error) in expectation.fulfill() }
         naturalLanguageClassifier.classify(
             classifierID: "this-is-an-invalid-classifier-id",
-            text: "How hot will it be today?",
-            failure: failure,
-            success: failWithResult
-        )
+            text: "How hot will it be today?"
+        ) {
+            _, error in
+
+            if error == nil {
+                XCTFail(missingErrorMessage)
+            }
+            expectation.fulfill()
+        }
         waitForExpectations()
     }
 
     func testDeleteInvalidClassifier() {
         let expectation = self.expectation(description: "Delete a classifier using an invalid classifier id.")
-        let failure = { (error: Error) in expectation.fulfill() }
         naturalLanguageClassifier.deleteClassifier(
-            classifierID: "this-is-an-invalid-classifier-id",
-            failure: failure,
-            success: failWithResult
-        )
+            classifierID: "this-is-an-invalid-classifier-id"
+        ) {
+            _, error in
+
+            if error == nil {
+                XCTFail(missingErrorMessage)
+            }
+            expectation.fulfill()
+        }
         waitForExpectations()
     }
 
     func testGetInvalidClassifier() {
         let expectation = self.expectation(description: "Get classifier using an invalid classifier id.")
-        let failure = { (error: Error) in expectation.fulfill() }
         naturalLanguageClassifier.getClassifier(
-            classifierID: "this-is-an-invalid-classifier-id",
-            failure: failure,
-            success: failWithResult
-        )
+            classifierID: "this-is-an-invalid-classifier-id"
+        ) {
+            _, error in
+
+            if error == nil {
+                XCTFail(missingErrorMessage)
+            }
+            expectation.fulfill()
+        }
         waitForExpectations()
     }
 }

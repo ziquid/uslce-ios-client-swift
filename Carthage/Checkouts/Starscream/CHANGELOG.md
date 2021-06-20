@@ -2,6 +2,59 @@
 All notable changes to this project will be documented in this file.
 `Starscream` adheres to [Semantic Versioning](http://semver.org/).
 
+### [4.0.4](https://github.com/daltoniam/Starscream/tree/4.0.4)
+
+Bug fixes for 4.0.3.
+
+[#808](https://github.com/daltoniam/Starscream/pull/808)
+[#807](https://github.com/daltoniam/Starscream/pull/807)
+[#799](https://github.com/daltoniam/Starscream/pull/799)
+[#797](https://github.com/daltoniam/Starscream/pull/797)
+[#790](https://github.com/daltoniam/Starscream/pull/790)
+[#788](https://github.com/daltoniam/Starscream/pull/788)
+[#777](https://github.com/daltoniam/Starscream/pull/777)
+[#768](https://github.com/daltoniam/Starscream/pull/768)
+[#766](https://github.com/daltoniam/Starscream/pull/766)
+[#764](https://github.com/daltoniam/Starscream/pull/764)
+
+### [4.0.3](https://github.com/daltoniam/Starscream/tree/4.0.3)
+
+Bug fixes for 4.0.2.
+
+[#760](https://github.com/daltoniam/Starscream/issues/760)
+
+### [4.0.2](https://github.com/daltoniam/Starscream/tree/4.0.2)
+
+Bug fixes for 4.0.1. Fixed native engine is connected/disconnected. Native engine isn't the default since the API lacks features.
+
+[#697](https://github.com/daltoniam/Starscream/pull/697)
+
+### [4.0.1](https://github.com/daltoniam/Starscream/tree/4.0.1)
+
+Bug fixes for 4.0.0. Enabled Native engine now that the API is out of beta and works properly.
+
+[#749](https://github.com/daltoniam/Starscream/pull/749)
+[#755](https://github.com/daltoniam/Starscream/pull/755)
+
+### [4.0.0](https://github.com/daltoniam/Starscream/tree/4.0.0)
+
+Major API refactor.
+
+### [3.1.1](https://github.com/daltoniam/Starscream/tree/3.1.1)
+
+Small version number fix for 3.1.0: [#703](https://github.com/daltoniam/Starscream/issues/703)
+
+### [3.1.0](https://github.com/daltoniam/Starscream/tree/3.1.0)
+
+* Swift 5.0 and Xcode 10.2 support
+
+#### [3.0.6](https://github.com/daltoniam/Starscream/tree/3.0.6)
+
+* Swift 4.2 and Xcode 10 support
+* added pongDelegate
+* moved CommonCrypto and zlib dependencies
+* HTTP proxy support
+
 #### [3.0.5](https://github.com/daltoniam/Starscream/tree/3.0.5)
 
 Swift 4.1 support and bug fixes.
@@ -142,14 +195,14 @@ Warning fixes for Swift 3.1
 
 Fix for the Swift Package Manager.
 
-Fixed: 
+Fixed:
 [#277](https://github.com/daltoniam/Starscream/issues/277)
 
 #### [2.0.1](https://github.com/daltoniam/Starscream/tree/2.0.1)
 
 Bug fixes.
 
-Fixed: 
+Fixed:
 [#261](https://github.com/daltoniam/Starscream/issues/261)
 [#276](https://github.com/daltoniam/Starscream/issues/276)
 [#267](https://github.com/daltoniam/Starscream/issues/267)
@@ -160,7 +213,7 @@ Fixed:
 
 Added Swift 3 support.
 
-Fixed: 
+Fixed:
 [#229](https://github.com/daltoniam/Starscream/issues/229)
 [#232](https://github.com/daltoniam/Starscream/issues/232)
 
@@ -170,7 +223,7 @@ Swift 2.3 support.
 
 #### [1.1.3](https://github.com/daltoniam/Starscream/tree/1.1.3)
 
-Changed: 
+Changed:
 [#170](https://github.com/daltoniam/Starscream/issues/170)
 [#171](https://github.com/daltoniam/Starscream/issues/171)
 [#174](https://github.com/daltoniam/Starscream/issues/174)
@@ -179,14 +232,14 @@ Changed:
 
 #### [1.1.2](https://github.com/daltoniam/Starscream/tree/1.1.2)
 
-Fixed: 
+Fixed:
 [#158](https://github.com/daltoniam/Starscream/issues/158)
 [#161](https://github.com/daltoniam/Starscream/issues/161)
 [#164](https://github.com/daltoniam/Starscream/issues/164)
 
 #### [1.1.1](https://github.com/daltoniam/Starscream/tree/1.1.1)
 
-Fixed: 
+Fixed:
 [#157](https://github.com/daltoniam/Starscream/issues/157)
 
 #### [1.1.0](https://github.com/daltoniam/Starscream/tree/1.1.0)
@@ -194,7 +247,7 @@ Fixed:
 Changed:
 Moved over to Runloop/default GCD queues to shared queue.
 
-Fixed: 
+Fixed:
 [#153](https://github.com/daltoniam/Starscream/issues/153)
 [#151](https://github.com/daltoniam/Starscream/issues/151)
 [#150](https://github.com/daltoniam/Starscream/issues/150)

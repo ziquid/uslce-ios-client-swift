@@ -10,8 +10,9 @@ outdir=${1:-gh-pages}
 services=(
   AssistantV1
   AssistantV2
-  ConversationV1
+  CompareComplyV1
   DiscoveryV1
+  DiscoveryV2
   LanguageTranslatorV3
   NaturalLanguageClassifierV1
   NaturalLanguageUnderstandingV1
@@ -20,6 +21,7 @@ services=(
   TextToSpeechV1
   ToneAnalyzerV3
   VisualRecognitionV3
+  VisualRecognitionV4
 )
 
 ################################################################################
@@ -36,14 +38,7 @@ cd ..
 # Create folder for generated documentation
 ################################################################################
 
-if [ -d "${outdir}" ]; then
-  echo "The output directory ${outdir} already exists."
-  echo "Please remove the directory and try again."
-  exit
-fi
-
-mkdir ${outdir}
-mkdir ${outdir}/services
+mkdir -p ${outdir}/services
 
 ################################################################################
 # Run Jazzy to generate documentation
@@ -51,16 +46,7 @@ mkdir ${outdir}/services
 
 for service in ${services[@]}; do
   mkdir ${outdir}/services/${service}
-  xcodebuild_arguments=-project,WatsonDeveloperCloud.xcodeproj,-scheme,${service}
-  jazzy \
-    --module ${service} \
-    --xcodebuild-arguments $xcodebuild_arguments \
-    --output ${outdir}/services/${service} \
-    --clean \
-    --readme Source/${service}/README.md \
-    --documentation README.md \
-    --github_url https://github.com/watson-developer-cloud/swift-sdk \
-    --hide-documentation-coverage
+  jazzy --config "Scripts/jazzy-config/${service}.jazzy.yaml"
 done
 
 ################################################################################

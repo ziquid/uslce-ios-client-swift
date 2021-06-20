@@ -1,5 +1,5 @@
 /**
- * Copyright IBM Corporation 2016, 2017
+ * (C) Copyright IBM Corp. 2016, 2020.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@
 import XCTest
 import Foundation
 import AssistantV2
-import RestKit
 
 class AssistantV2Tests: XCTestCase {
 
@@ -42,40 +41,22 @@ class AssistantV2Tests: XCTestCase {
             ("testDeleteSession", testDeleteSession),
             ("testDeleteSessionWithInvalidSessionID", testDeleteSessionWithInvalidSessionID),
             ("testMessage", testMessage),
+            ("testMessageStateless", testMessageStateless),
             ("testMessageWithInvalidSessionID", testMessageWithInvalidSessionID),
         ]
     }
 
     /** Instantiate Assistant. */
     func instantiateAssistant() {
-        let version = "2018-09-19"
-        if let apiKey = WatsonCredentials.AssistantAPIKey {
-            assistant = Assistant(version: version, apiKey: apiKey)
-        } else {
-            let username = WatsonCredentials.AssistantV2Username
-            let password = WatsonCredentials.AssistantV2Password
-            assistant = Assistant(username: username, password: password, version: version)
-        }
+
+        let authenticator = WatsonIAMAuthenticator.init(apiKey: WatsonCredentials.AssistantAPIKey)
+        assistant = Assistant(version: versionDate, authenticator: authenticator)
+
         if let url = WatsonCredentials.AssistantV2URL {
             assistant.serviceURL = url
         }
         assistant.defaultHeaders["X-Watson-Learning-Opt-Out"] = "true"
         assistant.defaultHeaders["X-Watson-Test"] = "true"
-    }
-
-    /** Fail false negatives. */
-    func failWithError(error: Error) {
-        XCTFail("Positive test failed with error: \(error)")
-    }
-
-    /** Fail false positives. */
-    func failWithResult<T>(result: T) {
-        XCTFail("Negative test returned a result.")
-    }
-
-    /** Fail false positives. */
-    func failWithResult() {
-        XCTFail("Negative test returned a result.")
     }
 
     /** Wait for expectations. */
@@ -90,10 +71,19 @@ class AssistantV2Tests: XCTestCase {
     func testCreateSession() {
         let description = "Create a session"
         let expectation = self.expectation(description: description)
-        assistant.createSession(assistantID: assistantID, failure: failWithError) {
-            response in
+        assistant.createSession(assistantID: assistantID) {
+            response, error in
 
-            XCTAssertNotNil(response.sessionID)
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+                return
+            }
+            guard let session = response?.result else {
+                XCTFail(missingResultMessage)
+                return
+            }
+
+            XCTAssertNotNil(session.sessionID)
             expectation.fulfill()
         }
 
@@ -103,10 +93,16 @@ class AssistantV2Tests: XCTestCase {
     func testCreateSessionWithInvalidAssistantID() {
         let description = "Create a session"
         let expectation = self.expectation(description: description)
-        let failure = { (error: Error) in expectation.fulfill() }
 
         let invalidID = "Invalid Assistant ID"
-        assistant.createSession(assistantID: invalidID, failure: failure, success: failWithResult)
+        assistant.createSession(assistantID: invalidID) {
+            _, error in
+
+            if error == nil {
+                XCTFail(missingErrorMessage)
+            }
+            expectation.fulfill()
+        }
 
         waitForExpectations()
     }
@@ -115,11 +111,20 @@ class AssistantV2Tests: XCTestCase {
         let description1 = "Create a session"
         let expectation1 = self.expectation(description: description1)
         var newSessionID: String?
-        assistant.createSession(assistantID: assistantID, failure: failWithError) {
-            response in
+        assistant.createSession(assistantID: assistantID) {
+            response, error in
 
-            XCTAssertNotNil(response.sessionID)
-            newSessionID = response.sessionID
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+                return
+            }
+            guard let session = response?.result else {
+                XCTFail(missingResultMessage)
+                return
+            }
+
+            XCTAssertNotNil(session.sessionID)
+            newSessionID = session.sessionID
             expectation1.fulfill()
         }
 
@@ -133,6 +138,13 @@ class AssistantV2Tests: XCTestCase {
         let description2 = "Delete the newly created session"
         let expectation2 = self.expectation(description: description2)
         assistant.deleteSession(assistantID: assistantID, sessionID: sessionID) {
+            _, error in
+
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+                return
+            }
+
             expectation2.fulfill()
         }
 
@@ -142,10 +154,16 @@ class AssistantV2Tests: XCTestCase {
     func testDeleteSessionWithInvalidSessionID() {
         let description = "Delete an invalid session"
         let expectation = self.expectation(description: description)
-        let failure = { (error: Error) in expectation.fulfill() }
 
         let invalidID = "Invalid Session ID"
-        assistant.deleteSession(assistantID: assistantID, sessionID: invalidID, failure: failure, success: failWithResult)
+        assistant.deleteSession(assistantID: assistantID, sessionID: invalidID) {
+            _, error in
+
+            if error == nil {
+                XCTFail(missingErrorMessage)
+            }
+            expectation.fulfill()
+        }
 
         waitForExpectations()
     }
@@ -157,11 +175,20 @@ class AssistantV2Tests: XCTestCase {
         let description1 = "Create a session"
         let expectation1 = self.expectation(description: description1)
         var newSessionID: String?
-        assistant.createSession(assistantID: assistantID, failure: failWithError) {
-            response in
+        assistant.createSession(assistantID: assistantID) {
+            response, error in
 
-            XCTAssertNotNil(response.sessionID)
-            newSessionID = response.sessionID
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+                return
+            }
+            guard let session = response?.result else {
+                XCTFail(missingResultMessage)
+                return
+            }
+
+            XCTAssertNotNil(session.sessionID)
+            newSessionID = session.sessionID
             expectation1.fulfill()
         }
 
@@ -176,20 +203,34 @@ class AssistantV2Tests: XCTestCase {
         let description2 = "Start a conversation."
         let expectation2 = self.expectation(description: description2)
 
-        assistant.message(assistantID: assistantID, sessionID: sessionID, input: nil, context: nil, failure: failWithError) {
-            response in
+        assistant.message(assistantID: assistantID, sessionID: sessionID, input: nil, context: nil) {
+            response, error in
 
-            let output = response.output
-            let context = response.context
-
-            // verify response message
-            guard let dialogRuntimeResponse = output.generic, dialogRuntimeResponse.count == 1 else {
-                XCTFail("Expected to receive a response message")
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+                return
+            }
+            guard let message = response?.result else {
+                XCTFail(missingResultMessage)
                 return
             }
 
-            XCTAssertEqual(dialogRuntimeResponse[0].responseType, "text")
-            XCTAssertNotNil(dialogRuntimeResponse[0].text)
+            let output = message.output
+            let context = message.context
+
+            // verify response message
+            guard let dialogRuntimeResponse = output.generic?.first else {
+                XCTFail("no generic")
+                return
+            }
+
+            guard case let .text(text) = dialogRuntimeResponse else {
+                XCTFail("Unexpected RuntimeResponse return type")
+                expectation2.fulfill()
+                return
+            }
+
+            XCTAssertNotNil(text.text)
 
             // verify context
             XCTAssertNil(context)
@@ -202,22 +243,37 @@ class AssistantV2Tests: XCTestCase {
         let description3 = "Continue a conversation."
         let expectation3 = self.expectation(description: description3)
 
-        let messageInput = MessageInput(messageType: MessageInput.MessageType.text.rawValue, text: "I'm good, how are you?")
+        let messageInputOptions = MessageInputOptions(restart: false, alternateIntents: false, spelling: nil, debug: false, returnContext: true, export: false)
+        let messageInput = MessageInput(messageType: MessageInput.MessageType.text.rawValue, text: "I'm good, how are you?", options: messageInputOptions)
 
-        assistant.message(assistantID: assistantID, sessionID: sessionID, input: messageInput, context: nil, failure: failWithError) {
-            response in
+        assistant.message(assistantID: assistantID, sessionID: sessionID, input: messageInput, context: nil) {
+            response, error in
 
-            let output = response.output
-            let context = response.context
-
-            // verify response message
-            guard let dialogRuntimeResponse = output.generic, dialogRuntimeResponse.count == 1 else {
-                XCTFail("Expected to receive a response message")
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+                return
+            }
+            guard let message = response?.result else {
+                XCTFail(missingResultMessage)
                 return
             }
 
-            XCTAssertEqual(dialogRuntimeResponse[0].responseType, "text")
-            XCTAssertNotNil(dialogRuntimeResponse[0].text)
+            let output = message.output
+            let context = message.context
+
+            // verify response message
+            guard let dialogRuntimeResponse = output.generic?.first else {
+                XCTFail("no generic")
+                return
+            }
+
+            guard case let .text(text) = dialogRuntimeResponse else {
+                XCTFail("Unexpected RuntimeResponse return type")
+                expectation3.fulfill()
+                return
+            }
+
+            XCTAssertNotNil(text.text)
 
             // verify intents
             guard let intents = output.intents, intents.count == 1 else {
@@ -228,21 +284,334 @@ class AssistantV2Tests: XCTestCase {
             XCTAssertEqual(intents[0].intent, "General_Greetings")
 
             // verify context
-            XCTAssertNil(context)
+            XCTAssertNotNil(context)
 
             expectation3.fulfill()
         }
         waitForExpectations()
     }
 
-    func testMessageWithInvalidSessionID() {
-        let description = "Send message with an invalid session"
-        let expectation = self.expectation(description: description)
-        let failure = { (error: Error) in expectation.fulfill() }
+    func testMessageStateless() {
+        let description = "Test message stateless"
+        let statelessMessageExpectation = self.expectation(description: description)
 
-        let invalidID = "Invalid Session ID"
-        assistant.message(assistantID: assistantID, sessionID: invalidID, failure: failure, success: failWithResult)
+        let testInput: MessageInputStateless = MessageInputStateless(messageType: "text", text: "This is a test", intents: nil, entities: nil, suggestionID: nil, options: nil)
+
+        let testGlobalContext: MessageContextGlobalStateless = MessageContextGlobalStateless(system: nil, sessionID: nil)
+        let testContext: MessageContextStateless = MessageContextStateless(global: testGlobalContext, skills: nil)
+
+        assistant.messageStateless(assistantID: assistantID, input: testInput, context: testContext, headers: nil) {
+            response, error in
+
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+                return
+            }
+
+            guard let messageResponse = response?.result else {
+                XCTFail(missingResultMessage)
+                return
+            }
+
+            XCTAssertNotNil(messageResponse.output)
+            XCTAssertNotNil(messageResponse.context)
+
+            statelessMessageExpectation.fulfill()
+        }
 
         waitForExpectations()
     }
+
+    func testMessageWithSystemEntity() {
+        let description1 = "Create a session"
+        let expectation1 = self.expectation(description: description1)
+        var newSessionID: String?
+        assistant.createSession(assistantID: assistantID) {
+            response, error in
+
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+                return
+            }
+            guard let session = response?.result else {
+                XCTFail(missingResultMessage)
+                return
+            }
+
+            XCTAssertNotNil(session.sessionID)
+            newSessionID = session.sessionID
+            expectation1.fulfill()
+        }
+
+        waitForExpectations()
+
+        let message1Expectation = self.expectation(description: "message 1")
+        assistant.message(assistantID: assistantID, sessionID: newSessionID!) {
+            response, error in
+
+            if let error = error {
+                XCTFail(error.localizedDescription)
+                return
+            }
+
+            guard let result = response?.result else {
+                XCTFail("no response")
+                return
+            }
+
+            message1Expectation.fulfill()
+        }
+
+        waitForExpectations()
+
+        let message2Expectation = self.expectation(description: "message 2")
+        let messageInput = MessageInput(messageType: MessageInput.MessageType.text.rawValue, text: "are you open on christmas")
+        assistant.message(assistantID: assistantID, sessionID: newSessionID!, input: messageInput, context: nil) {
+            response, error in
+
+            if let error = error {
+                XCTFail(error.localizedDescription)
+                return
+            }
+
+            guard let result = response?.result else {
+                XCTFail("no response")
+                return
+            }
+
+            message2Expectation.fulfill()
+        }
+
+        waitForExpectations()
+    }
+
+    // MARK: - Skill Contexts
+
+    func testMessageContextSkills() {
+        // Create a session
+        var newSessionID: String?
+        let expectation1 = self.expectation(description: "Create a session")
+        assistant.createSession(assistantID: assistantID) {
+            response, error in
+
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+                return
+            }
+            guard let session = response?.result else {
+                XCTFail(missingResultMessage)
+                return
+            }
+
+            XCTAssertNotNil(session.sessionID)
+            newSessionID = session.sessionID
+            expectation1.fulfill()
+        }
+
+        waitForExpectations()
+
+        guard let sessionID = newSessionID else {
+            XCTFail("Failed to get the ID of the newly created session")
+            return
+        }
+
+        // create global context with user ID
+        let system = MessageContextGlobalSystem(userID: "my_user_id")
+        let global = MessageContextGlobal(system: system)
+
+        // build user-defined context variables, put in skill-specific context for main skill
+        var userDefinedContext: [String: WatsonJSON] = [:]
+        userDefinedContext["account_number"] = .string("123456")
+        let mainSkillContext = MessageContextSkill(userDefined: userDefinedContext)
+        let skills = ["main skill": mainSkillContext]
+
+        let context = MessageContext(global: global, skills: skills)
+
+        let input = MessageInput(messageType: "text", text: "Hello", options: MessageInputOptions(returnContext: true))
+
+        // Start conversation with a non-empty context
+        let expectation2 = self.expectation(description: "Start a conversation.")
+        assistant.message(assistantID: assistantID, sessionID: sessionID, input: input, context: context) {
+            response, error in
+
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+                return
+            }
+            guard let message = response?.result else {
+                XCTFail(missingResultMessage)
+                return
+            }
+
+            let output = message.output
+
+            // verify response message
+            guard let dialogRuntimeResponse = output.generic?.first else {
+                XCTFail("no generic")
+                return
+            }
+
+            guard case let .text(text) = dialogRuntimeResponse else {
+                XCTFail("Unexpected RuntimeResponse return type")
+                expectation2.fulfill()
+                return
+            }
+
+            XCTAssertNotNil(text.text)
+
+            // verify context
+            XCTAssertNotNil(message.context)
+            XCTAssertNotNil(message.context?.skills)
+            XCTAssertTrue(message.context?.skills?.keys.contains("main skill") ?? false)
+
+            expectation2.fulfill()
+        }
+        waitForExpectations()
+
+    }
+
+    func testMessageWithInvalidSessionID() {
+        let description = "Send message with an invalid session"
+        let expectation = self.expectation(description: description)
+
+        let invalidID = "Invalid Session ID"
+        assistant.message(assistantID: assistantID, sessionID: invalidID) {
+            _, error in
+
+            if error == nil {
+                XCTFail(missingErrorMessage)
+            }
+            expectation.fulfill()
+        }
+
+        waitForExpectations()
+    }
+
+    // MARK: - Search Skill
+
+    func testAssistantSearchSkill() {
+
+        let sessionExpectationDescription = "Create a session"
+        let sessionExpectation = self.expectation(description: sessionExpectationDescription)
+
+        // setup session
+        var newSessionID: String?
+        assistant.createSession(assistantID: assistantID) {
+            response, error in
+
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+                return
+            }
+            guard let session = response?.result else {
+                XCTFail(missingResultMessage)
+                return
+            }
+
+            XCTAssertNotNil(session.sessionID)
+            newSessionID = session.sessionID
+            sessionExpectation.fulfill()
+        }
+
+        waitForExpectations()
+
+        guard let sessionID = newSessionID else {
+            XCTFail("Failed to get the ID of the newly created session")
+            return
+        }
+
+        let genericMessages: [String] = [
+            "Hello",
+            "Are you open on christmas",
+            "I\'d like to make an appointment",
+            "Tomorrow at 3pm",
+            "Make that thursday at 2pm",
+        ]
+
+        // send multiple messages to get assistant going
+        for genericMessage in genericMessages {
+            let genericMessageDescription = "generic message"
+            let genericMessageExpectation = self.expectation(description: genericMessageDescription)
+            let messageInput = MessageInput(messageType: "text", text: genericMessage)
+
+            assistant.message(assistantID: assistantID, sessionID: sessionID, input: messageInput) {
+                response, error in
+
+                if let error = error {
+                    XCTFail(unexpectedErrorMessage(error))
+                    return
+                }
+
+                XCTAssertNotNil(response?.result)
+                genericMessageExpectation.fulfill()
+            }
+
+            waitForExpectations()
+        }
+
+        // send a message that triggers search skill
+        let searchSkillMessageDescription = "search skill message"
+        let searchSkillMessageExpectation = self.expectation(description: searchSkillMessageDescription)
+        let searchSkillMessageInput = MessageInput(messageType: "text", text: "who did watson beat in jeopardy?")
+
+        assistant.message(assistantID: assistantID, sessionID: sessionID, input: searchSkillMessageInput) {
+            response, error in
+
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+                return
+            }
+
+            // verify response message
+            guard let dialogRuntimeResponse = response?.result?.output.generic?.first else {
+                XCTFail("no generic")
+                return
+            }
+
+            guard case let .search(search) = dialogRuntimeResponse else {
+                XCTFail("Unexpected RuntimeResponse return type")
+                searchSkillMessageExpectation.fulfill()
+                return
+            }
+
+            XCTAssertNotNil(search)
+            XCTAssert(search.responseType == "search")
+
+            searchSkillMessageExpectation.fulfill()
+        }
+
+        waitForExpectations()
+    }
+
+    // NOTE: this function is only available on premium instances of Assistant
+    func testListLogs() {
+        let description = "Test listLogs"
+        let expectation = self.expectation(description: description)
+
+        let premiumAuthenticator = WatsonIAMAuthenticator(apiKey: WatsonCredentials.AssistantV2PremiumAPIKey!, url: "https://iam.test.cloud.ibm.com/identity/token")
+        let premiumAssistant = Assistant(version: versionDate, authenticator: premiumAuthenticator)
+
+        premiumAssistant.serviceURL = WatsonCredentials.AssistantV2PremiumURL!
+
+        premiumAssistant.listLogs(assistantID: WatsonCredentials.AssistantV2PremiumAssistantID!, sort: nil, filter: nil, pageLimit: nil, cursor: nil, headers: nil) {
+            response, error in
+
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+                return
+            }
+
+            guard let logsCollection = response?.result else {
+                XCTFail(missingResultMessage)
+                return
+            }
+
+            XCTAssertNotNil(logsCollection.logs)
+
+            expectation.fulfill()
+        }
+
+        waitForExpectations()
+    }
+
 }

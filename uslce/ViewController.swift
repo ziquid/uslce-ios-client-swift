@@ -169,7 +169,7 @@ class ViewController: UIViewController, WKUIDelegate, WKNavigationDelegate {
     func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
         let scheme = navigationAction.request.url?.scheme
         if (navigationAction.targetFrame == nil || scheme == "external") {
-//            print(navigationAction.request.url?.absoluteString)
+            print(navigationAction.request.url?.absoluteString as Any)
             let urlString = navigationAction.request.url!.absoluteString;
             let newUrlString = urlString.replacingOccurrences(of: "external://", with: "http://")
             let newUrl = URL(string: newUrlString)

@@ -1,5 +1,5 @@
 /**
- * Copyright IBM Corporation 2016-2017
+ * (C) Copyright IBM Corp. 2016, 2020.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,12 +22,11 @@
 import XCTest
 import Foundation
 import SpeechToTextV1
-import RestKit
 
 class SpeechToTextRecognizeTests: XCTestCase {
 
     private var speechToText: SpeechToText!
-    private let timeout: TimeInterval = 10.0
+    private let timeout: TimeInterval = 20.0
 
     // MARK: - Test Configuration
 
@@ -38,20 +37,23 @@ class SpeechToTextRecognizeTests: XCTestCase {
     }
 
     func instantiateSpeechToText() {
-        if let apiKey = WatsonCredentials.SpeechToTextAPIKey {
-            speechToText = SpeechToText(apiKey: apiKey)
-        } else {
-            let username = WatsonCredentials.SpeechToTextUsername
-            let password = WatsonCredentials.SpeechToTextPassword
-            speechToText = SpeechToText(username: username, password: password)
-        }
+
+        let authenticator = WatsonIAMAuthenticator.init(apiKey: WatsonCredentials.SpeechToTextAPIKey)
+        speechToText = SpeechToText(authenticator: authenticator)
+
         if let url = WatsonCredentials.SpeechToTextURL {
             speechToText.serviceURL = url
-            let wsUrl = url.replacingOccurrences(of: "https", with: "wss").appending("/v1/recognize")
-            speechToText.websocketsURL = wsUrl
         }
         speechToText.defaultHeaders["X-Watson-Learning-Opt-Out"] = "true"
         speechToText.defaultHeaders["X-Watson-Test"] = "true"
+    }
+
+    func cannotLocateFileMessage(_ fileName: String, _ withExtension: String) -> String {
+        return "Unable to locate \(fileName).\(withExtension)"
+    }
+
+    func cannotReadFileMessage(_ fileName: String, _ withExtension: String) -> String {
+        return "Unable to read \(fileName).\(withExtension)"
     }
 
     // MARK: - Test Definition for Linux
@@ -79,20 +81,6 @@ class SpeechToTextRecognizeTests: XCTestCase {
         ]
     }
 
-    // MARK: - Helper Functions
-
-    func failWithError(error: Error) {
-        XCTFail("Positive test failed with error: \(error)")
-    }
-
-    func failWithResult<T>(result: T) {
-        XCTFail("Negative test returned a result.")
-    }
-
-    func failWithResult() {
-        XCTFail("Negative test returned a result.")
-    }
-
     // MARK: - Transcribe File, Default Settings
 
     func testTranscribeFileDefaultWAV() {
@@ -107,31 +95,42 @@ class SpeechToTextRecognizeTests: XCTestCase {
         transcribeFileDefault(filename: "SpeechSample", withExtension: "flac", format: "audio/flac")
     }
 
-    func transcribeFileDefault(filename: String, withExtension: String, format: String) {
+    func testTranscribeFileNoFormat() {
+        transcribeFileDefault(filename: "SpeechSample", withExtension: "wav", format: nil)
+    }
+
+    func transcribeFileDefault(filename: String, withExtension: String, format: String?) {
         let description = "Transcribe an audio file."
         let expectation = self.expectation(description: description)
 
         let bundle = Bundle(for: type(of: self))
         guard let file = bundle.url(forResource: filename, withExtension: withExtension) else {
-            XCTFail("Unable to locate \(filename).\(withExtension).")
+            XCTFail(cannotLocateFileMessage(filename, withExtension))
             return
         }
+        let fileData = try! Data(contentsOf: file)
 
         let settings = RecognitionSettings(contentType: format)
-        speechToText.recognize(audio: file, settings: settings, failure: failWithError) { results in
+
+        var callback = RecognizeCallback()
+        callback.onError = { error in
+            XCTFail(unexpectedErrorMessage(error))
+        }
+        callback.onResults = { results in
             self.validateSTTResults(results: results, settings: settings)
             XCTAssertNotNil(results.results)
             XCTAssertEqual(results.results!.count, 1)
-            XCTAssert(results.results!.last?.finalResults == true)
+            XCTAssert(results.results!.last?.final == true)
             let transcript = results.results!.last?.alternatives.last?.transcript
             XCTAssertNotNil(transcript)
             XCTAssertGreaterThan(transcript!.count, 0)
             expectation.fulfill()
         }
+        speechToText.recognizeUsingWebSocket(audio: fileData, settings: settings, callback: callback)
         wait(for: [expectation], timeout: timeout)
     }
 
-     // MARK: - Transcribe File, Custom Settings
+    // MARK: - Transcribe File, Custom Settings
 
     func testTranscribeFileCustomWAV() {
         transcribeFileCustom(filename: "SpeechSample", withExtension: "wav", format: "audio/wav")
@@ -145,15 +144,20 @@ class SpeechToTextRecognizeTests: XCTestCase {
         transcribeFileCustom(filename: "SpeechSample", withExtension: "flac", format: "audio/flac")
     }
 
-    func transcribeFileCustom(filename: String, withExtension: String, format: String) {
+    func testTranscribeFileCustomNoFormat() {
+        transcribeFileCustom(filename: "SpeechSample", withExtension: "ogg", format: nil)
+    }
+
+    func transcribeFileCustom(filename: String, withExtension: String, format: String?) {
         let description = "Transcribe an audio file."
         let expectation = self.expectation(description: description)
 
         let bundle = Bundle(for: type(of: self))
         guard let file = bundle.url(forResource: filename, withExtension: withExtension) else {
-            XCTFail("Unable to locate \(filename).\(withExtension).")
+            XCTFail(cannotLocateFileMessage(filename, withExtension))
             return
         }
+        let fileData = try! Data(contentsOf: file)
 
         var settings = RecognitionSettings(contentType: format)
         settings.inactivityTimeout = -1
@@ -167,16 +171,83 @@ class SpeechToTextRecognizeTests: XCTestCase {
         settings.filterProfanity = false
         settings.smartFormatting = true
 
-        speechToText.recognize(audio: file, settings: settings, model: "en-US_BroadbandModel", learningOptOut: true, failure: failWithError) { results in
+        var callback = RecognizeCallback()
+        callback.onError = { error in
+            XCTFail(unexpectedErrorMessage(error))
+        }
+        callback.onResults = { results in
             self.validateSTTResults(results: results, settings: settings)
             XCTAssertNotNil(results.results)
-            if results.results!.last?.finalResults == true {
+            if results.results!.last?.final == true {
                 let transcript = results.results!.last?.alternatives.last?.transcript
                 XCTAssertNotNil(transcript)
                 XCTAssertGreaterThan(transcript!.count, 0)
                 expectation.fulfill()
             }
         }
+        speechToText.recognizeUsingWebSocket(audio: fileData, settings: settings, model: "en-US_BroadbandModel", learningOptOut: true, callback: callback)
+        wait(for: [expectation], timeout: timeout)
+    }
+
+    // MARK: - Processing Metrics
+
+    func testTranscribeFileWithProcessingMetricsWAV() {
+        transcribeFileWithProcessingMetrics(filename: "SpeechSample", withExtension: "wav", format: "audio/wav")
+    }
+
+    func testTranscribeFileWithProcessingMetricsOpus() {
+        transcribeFileWithProcessingMetrics(filename: "SpeechSample", withExtension: "ogg", format: "audio/ogg;codecs=opus")
+    }
+
+    func testTranscribeFileWithProcessingMetricsFLAC() {
+        transcribeFileWithProcessingMetrics(filename: "SpeechSample", withExtension: "flac", format: "audio/flac")
+    }
+
+    func testTranscribeFileWithProcessingMetricsNoFormat() {
+        transcribeFileWithProcessingMetrics(filename: "SpeechSample", withExtension: "ogg", format: nil)
+    }
+
+    func transcribeFileWithProcessingMetrics(filename: String, withExtension: String, format: String?) {
+        let description = "Transcribe an audio file."
+        let expectation = self.expectation(description: description)
+
+        let bundle = Bundle(for: type(of: self))
+        guard let file = bundle.url(forResource: filename, withExtension: withExtension) else {
+            XCTFail(cannotLocateFileMessage(filename, withExtension))
+            return
+        }
+        let fileData = try! Data(contentsOf: file)
+
+        var settings = RecognitionSettings(contentType: format)
+        settings.processingMetrics = true
+        settings.processingMetricsInterval = 0.5
+        settings.audioMetrics = true
+
+        var gotProcessingMetrics = false
+        var gotAudioMetrics = false
+        var callback = RecognizeCallback()
+        callback.onError = { error in
+            XCTFail(unexpectedErrorMessage(error))
+        }
+        callback.onResults = { results in
+            self.validateSTTResults(results: results, settings: settings)
+            if results.processingMetrics != nil {
+                gotProcessingMetrics = true
+            }
+            if results.audioMetrics != nil {
+                gotAudioMetrics = true
+            }
+            // Check final results
+            if results.results?.last?.final == true {
+                let transcript = results.results!.last?.alternatives.last?.transcript
+                XCTAssertNotNil(transcript)
+                XCTAssertGreaterThan(transcript!.count, 0)
+                XCTAssert(gotProcessingMetrics)
+                XCTAssert(gotAudioMetrics)
+                expectation.fulfill()
+            }
+        }
+        speechToText.recognizeUsingWebSocket(audio: fileData, settings: settings, model: "en-US_BroadbandModel", learningOptOut: true, callback: callback)
         wait(for: [expectation], timeout: timeout)
     }
 
@@ -194,13 +265,17 @@ class SpeechToTextRecognizeTests: XCTestCase {
         transcribeDataDefault(filename: "SpeechSample", withExtension: "flac", format: "audio/flac")
     }
 
-    func transcribeDataDefault(filename: String, withExtension: String, format: String) {
+    func testTranscribeDataDefaultNoFormat() {
+        transcribeDataDefault(filename: "SpeechSample", withExtension: "flac", format: nil)
+    }
+
+    func transcribeDataDefault(filename: String, withExtension: String, format: String?) {
         let description = "Transcribe an audio file."
         let expectation = self.expectation(description: description)
 
         let bundle = Bundle(for: type(of: self))
         guard let file = bundle.url(forResource: filename, withExtension: withExtension) else {
-            XCTFail("Unable to locate \(filename).\(withExtension).")
+            XCTFail(cannotLocateFileMessage(filename, withExtension))
             return
         }
 
@@ -208,24 +283,30 @@ class SpeechToTextRecognizeTests: XCTestCase {
             let audio = try Data(contentsOf: file)
 
             let settings = RecognitionSettings(contentType: format)
-            speechToText.recognizeUsingWebSocket(audio: audio, settings: settings, failure: failWithError) { results in
+
+            var callback = RecognizeCallback()
+            callback.onError = { error in
+                XCTFail(unexpectedErrorMessage(error))
+            }
+            callback.onResults = { results in
                 self.validateSTTResults(results: results, settings: settings)
                 XCTAssertNotNil(results.results)
                 XCTAssertEqual(results.results!.count, 1)
-                XCTAssert(results.results!.last?.finalResults == true)
+                XCTAssert(results.results!.last?.final == true)
                 let transcript = results.results!.last?.alternatives.last?.transcript
                 XCTAssertNotNil(transcript)
                 XCTAssertGreaterThan(transcript!.count, 0)
                 expectation.fulfill()
             }
+            speechToText.recognizeUsingWebSocket(audio: audio, settings: settings, callback: callback)
             wait(for: [expectation], timeout: timeout)
         } catch {
-            XCTFail("Unable to read \(filename).\(withExtension).")
+            XCTFail(cannotReadFileMessage(filename, withExtension))
             return
         }
     }
 
-     // MARK: - Transcribe Data, Custom Settings
+    // MARK: - Transcribe Data, Custom Settings
 
     func testTranscribeDataCustomWAV() {
         transcribeDataCustom(filename: "SpeechSample", withExtension: "wav", format: "audio/wav")
@@ -239,13 +320,17 @@ class SpeechToTextRecognizeTests: XCTestCase {
         transcribeDataCustom(filename: "SpeechSample", withExtension: "flac", format: "audio/flac")
     }
 
-    func transcribeDataCustom(filename: String, withExtension: String, format: String) {
+    func testTranscribeDataCustomNoFormat() {
+        transcribeDataCustom(filename: "SpeechSample", withExtension: "wav", format: nil)
+    }
+
+    func transcribeDataCustom(filename: String, withExtension: String, format: String?) {
         let description = "Transcribe an audio file."
         let expectation = self.expectation(description: description)
 
         let bundle = Bundle(for: type(of: self))
         guard let file = bundle.url(forResource: filename, withExtension: withExtension) else {
-            XCTFail("Unable to locate \(filename).\(withExtension).")
+            XCTFail(cannotLocateFileMessage(filename, withExtension))
             return
         }
 
@@ -264,18 +349,24 @@ class SpeechToTextRecognizeTests: XCTestCase {
             settings.filterProfanity = false
             settings.smartFormatting = true
 
-            speechToText.recognizeUsingWebSocket(audio: audio, settings: settings, model: "en-US_BroadbandModel", learningOptOut: true, failure: failWithError) { results in
+            var callback = RecognizeCallback()
+            callback.onError = { error in
+                XCTFail(unexpectedErrorMessage(error))
+                return
+            }
+            callback.onResults = { results in
                 self.validateSTTResults(results: results, settings: settings)
-                if results.results?.last?.finalResults == true {
+                if results.results?.last?.final == true {
                     let transcript = results.results!.last?.alternatives.last?.transcript
                     XCTAssertNotNil(transcript)
                     XCTAssertGreaterThan(transcript!.count, 0)
                     expectation.fulfill()
                 }
             }
+            speechToText.recognizeUsingWebSocket(audio: audio, settings: settings, model: "en-US_BroadbandModel", learningOptOut: true, callback: callback)
             wait(for: [expectation], timeout: timeout)
         } catch {
-            XCTFail("Unable to read \(filename).\(withExtension).")
+            XCTFail(cannotReadFileMessage(filename, withExtension))
             return
         }
     }
@@ -291,7 +382,16 @@ class SpeechToTextRecognizeTests: XCTestCase {
         // find a suitable language model
         var customizationID: String!
         let expectation1 = self.expectation(description: "listLanguageModels")
-        speechToText.listLanguageModels(language: "en-US", failure: failWithError) { results in
+        speechToText.listLanguageModels(language: "en-US") {
+            response, error in
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+                return
+            }
+            guard let results = response?.result else {
+                XCTFail(missingResultMessage)
+                return
+            }
             let languageModel = results.customizations.first(where: { model in
                 model.baseModelName == baseModelName && model.status == LanguageModel.Status.available.rawValue
             })
@@ -306,7 +406,6 @@ class SpeechToTextRecognizeTests: XCTestCase {
             return
         }
 
-        let expectation2 = self.expectation(description: "Recognize with custom language model")
         let bundle = Bundle(for: type(of: self))
         guard let file = bundle.url(forResource: filename, withExtension: withExtension) else {
             XCTFail("Unable to locate \(filename).\(withExtension).")
@@ -316,17 +415,24 @@ class SpeechToTextRecognizeTests: XCTestCase {
         do {
             let audio = try Data(contentsOf: file)
             let settings = RecognitionSettings(contentType: format)
-            speechToText.recognizeUsingWebSocket(audio: audio, settings: settings, model: baseModelName, customizationID: customizationID, failure: failWithError) { results in
+
+            var callback = RecognizeCallback()
+            callback.onError = { error in
+                XCTFail(unexpectedErrorMessage(error))
+            }
+            let expectation2 = self.expectation(description: "Recognize with custom language model")
+            callback.onResults = { results in
                 self.validateSTTResults(results: results, settings: settings)
                 XCTAssertNotNil(results.results)
                 XCTAssertEqual(results.results!.count, 1)
-                XCTAssert(results.results!.last?.finalResults == true)
+                XCTAssert(results.results!.last?.final == true)
                 let transcript = results.results!.last?.alternatives.last?.transcript
                 XCTAssertNotNil(transcript)
                 XCTAssertGreaterThan(transcript!.count, 0)
                 expectation2.fulfill()
             }
-            wait(for: [expectation2], timeout: timeout)
+            speechToText.recognizeUsingWebSocket(audio: audio, settings: settings, model: baseModelName, languageCustomizationID: customizationID, callback: callback)
+            wait(for: [expectation2], timeout: 30)
         } catch {
             XCTFail("Unable to read \(filename).\(withExtension).")
             return
@@ -342,7 +448,16 @@ class SpeechToTextRecognizeTests: XCTestCase {
         // find a suitable acoustic model
         var customizationID: String!
         let expectation1 = self.expectation(description: "listAcousticModels")
-        speechToText.listAcousticModels(language: "en-US", failure: failWithError) { results in
+        speechToText.listAcousticModels(language: "en-US") {
+            response, error in
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+                return
+            }
+            guard let results = response?.result else {
+                XCTFail(missingResultMessage)
+                return
+            }
             let acousticModel = results.customizations.first(where: { model in
                 model.baseModelName == baseModelName && model.status == AcousticModel.Status.available.rawValue
             })
@@ -368,16 +483,21 @@ class SpeechToTextRecognizeTests: XCTestCase {
             let audio = try Data(contentsOf: file)
 
             let settings = RecognitionSettings(contentType: format)
-            speechToText.recognizeUsingWebSocket(audio: audio, settings: settings, model: baseModelName, acousticCustomizationID: customizationID, failure: failWithError) { results in
+            var callback = RecognizeCallback()
+            callback.onError = { error in
+                XCTFail(unexpectedErrorMessage(error))
+            }
+            callback.onResults = { results in
                 self.validateSTTResults(results: results, settings: settings)
                 XCTAssertNotNil(results.results)
                 XCTAssertEqual(results.results!.count, 1)
-                XCTAssert(results.results!.last?.finalResults == true)
+                XCTAssert(results.results!.last?.final == true)
                 let transcript = results.results!.last?.alternatives.last?.transcript
                 XCTAssertNotNil(transcript)
                 XCTAssertGreaterThan(transcript!.count, 0)
                 expectation.fulfill()
             }
+            speechToText.recognizeUsingWebSocket(audio: audio, settings: settings, model: baseModelName, acousticCustomizationID: customizationID, callback: callback)
             wait(for: [expectation], timeout: timeout)
         } catch {
             XCTFail("Unable to read \(filename).\(withExtension).")
@@ -385,14 +505,14 @@ class SpeechToTextRecognizeTests: XCTestCase {
         }
     }
 
-     // MARK: - Transcribe Data with Smart Formatting
+    // MARK: - Transcribe Data with Smart Formatting
 
     func testTranscribeStockAnnouncementCustomWAV() {
         transcribeDataCustomForNumbers(
             filename: "StockAnnouncement",
             withExtension: "wav",
             format: "audio/wav",
-            substring: "$152.37"
+            substring: "IBM stock"
         )
     }
 
@@ -402,22 +522,26 @@ class SpeechToTextRecognizeTests: XCTestCase {
 
         let bundle = Bundle(for: type(of: self))
         guard let file = bundle.url(forResource: filename, withExtension: withExtension) else {
-            XCTFail("Unable to locate \(filename).\(withExtension).")
+            XCTFail(cannotLocateFileMessage(filename, withExtension))
             return
         }
 
         guard let audio = try? Data(contentsOf: file) else {
-            XCTFail("Unable to read \(filename).\(withExtension).")
+            XCTFail(cannotReadFileMessage(filename, withExtension))
             return
         }
 
         var settings = RecognitionSettings(contentType: format)
         settings.smartFormatting = true
 
-        speechToText.recognizeUsingWebSocket(audio: audio, settings: settings, model: "en-US_BroadbandModel", learningOptOut: true, failure: failWithError) { results in
+        var callback = RecognizeCallback()
+        callback.onError = { error in
+            XCTFail(unexpectedErrorMessage(error))
+        }
+        callback.onResults = { results in
             self.validateSTTResults(results: results, settings: settings)
             XCTAssertNotNil(results.results)
-            if results.results!.last?.finalResults == true {
+            if results.results!.last?.final == true {
                 let transcript = results.results!.last?.alternatives.last?.transcript
                 XCTAssertNotNil(transcript)
                 XCTAssertGreaterThan(transcript!.count, 0)
@@ -425,6 +549,14 @@ class SpeechToTextRecognizeTests: XCTestCase {
                 expectation.fulfill()
             }
         }
+
+        speechToText.recognizeUsingWebSocket(
+            audio: audio,
+            settings: settings,
+            model: "en-US_BroadbandModel",
+            learningOptOut: true,
+            callback: callback)
+
         wait(for: [expectation], timeout: timeout)
     }
 
@@ -440,14 +572,18 @@ class SpeechToTextRecognizeTests: XCTestCase {
         transcribeDataWithSpeakerLabels(filename: "SpeechSample", withExtension: "flac", format: "audio/flac")
     }
 
-    func transcribeDataWithSpeakerLabels(filename: String, withExtension: String, format: String) {
+    func testTranscribeDataWithSpeakerLabelsNoFormat() {
+        transcribeDataWithSpeakerLabels(filename: "SpeechSample", withExtension: "ogg", format: nil)
+    }
+
+    func transcribeDataWithSpeakerLabels(filename: String, withExtension: String, format: String?) {
         let description = "Transcribe an audio file."
         let expectation = self.expectation(description: description)
         var expectationFulfilled = false
 
         let bundle = Bundle(for: type(of: self))
         guard let file = bundle.url(forResource: filename, withExtension: withExtension) else {
-            XCTFail("Unable to locate \(filename).\(withExtension).")
+            XCTFail(cannotLocateFileMessage(filename, withExtension))
             return
         }
 
@@ -462,7 +598,11 @@ class SpeechToTextRecognizeTests: XCTestCase {
             settings.filterProfanity = false
             settings.speakerLabels = true
 
-            speechToText.recognizeUsingWebSocket(audio: audio, settings: settings, model: "en-US_NarrowbandModel", learningOptOut: true, failure: failWithError) { results in
+            var callback = RecognizeCallback()
+            callback.onError = { error in
+                XCTFail(unexpectedErrorMessage(error))
+            }
+            callback.onResults = { results in
                 XCTAssertNotNil(results.speakerLabels)
                 if !expectationFulfilled && results.speakerLabels!.count > 0 {
                     self.validateSTTSpeakerLabels(speakerLabels: results.speakerLabels!)
@@ -470,78 +610,194 @@ class SpeechToTextRecognizeTests: XCTestCase {
                     expectation.fulfill()
                 }
             }
+            speechToText.recognizeUsingWebSocket(audio: audio, settings: settings, model: "en-US_NarrowbandModel", learningOptOut: true, callback: callback)
             wait(for: [expectation], timeout: timeout)
         } catch {
-            XCTFail("Unable to read \(filename).\(withExtension).")
+            XCTFail(cannotReadFileMessage(filename, withExtension))
             return
         }
     }
 
-     // MARK: - Results Accumulator
+    // MARK: - All settings
+
+    func testTranscribeDataWithAllSettingsWAV() {
+        transcribeDataWithAllSettings(filename: "SpeechSample", withExtension: "wav", format: "audio/wav")
+    }
+
+    func testTranscribeDataWithAllSettingsOpus() {
+        transcribeDataWithAllSettings(filename: "SpeechSample", withExtension: "ogg", format: "audio/ogg;codecs=opus")
+    }
+
+    func testTranscribeDataWithAllSettingsFLAC() {
+        transcribeDataWithAllSettings(filename: "SpeechSample", withExtension: "flac", format: "audio/flac")
+    }
+
+    func testTranscribeDataWithAllSettingsNoFormat() {
+        transcribeDataWithAllSettings(filename: "SpeechSample", withExtension: "ogg", format: nil)
+    }
+
+    func transcribeDataWithAllSettings(filename: String, withExtension: String, format: String?) {
+        let description = "Transcribe an audio file."
+        let expectation = self.expectation(description: description)
+        var expectationFulfilled = false
+
+        let bundle = Bundle(for: type(of: self))
+        guard let file = bundle.url(forResource: filename, withExtension: withExtension) else {
+            XCTFail(cannotLocateFileMessage(filename, withExtension))
+            return
+        }
+
+        do {
+            let audio = try Data(contentsOf: file)
+
+            var settings = RecognitionSettings(contentType: format)
+            settings.inactivityTimeout = -1
+            settings.interimResults = true
+            settings.wordConfidence = true
+            settings.timestamps = true
+            settings.filterProfanity = true
+            settings.speakerLabels = true
+            settings.redaction = true
+            settings.audioMetrics = true
+            settings.endOfPhraseSilenceTime = 10
+            settings.splitTranscriptAtPhraseEnd = true
+            settings.backgroundAudioSuppression = 1.0
+
+            var callback = RecognizeCallback()
+            callback.onError = { error in
+                XCTFail(unexpectedErrorMessage(error))
+            }
+            callback.onResults = { results in
+                XCTAssertNotNil(results.speakerLabels)
+                if !expectationFulfilled && results.speakerLabels!.count > 0 {
+                    self.validateSTTSpeakerLabels(speakerLabels: results.speakerLabels!)
+                    expectationFulfilled = true
+                    expectation.fulfill()
+                }
+            }
+            speechToText.recognizeUsingWebSocket(audio: audio, settings: settings, model: "en-US_NarrowbandModel", learningOptOut: true, callback: callback)
+            wait(for: [expectation], timeout: timeout)
+        } catch {
+            XCTFail(cannotReadFileMessage(filename, withExtension))
+            return
+        }
+    }
+
+    // MARK: - callbacks
+
+    func testCallbacks() {
+        let filename = "SpeechSample"
+        let ext = "wav"
+
+        let bundle = Bundle(for: type(of: self))
+        guard let file = bundle.url(forResource: filename, withExtension: ext) else {
+            XCTFail(cannotLocateFileMessage(filename, ext))
+            return
+        }
+        let audio = try! Data(contentsOf: file)
+
+        var settings = RecognitionSettings(contentType: "audio/wav")
+        settings.inactivityTimeout = 5
+        settings.interimResults = false
+
+        let gotResults = self.expectation(description: "onResults received")
+
+        var callback = RecognizeCallback()
+        callback.onResults = { _ in
+            gotResults.fulfill()
+        }
+        callback.onError = { error in
+            XCTFail(unexpectedErrorMessage(error))
+        }
+        speechToText.recognizeUsingWebSocket(audio: audio, settings: settings, model: "en-US_NarrowbandModel", learningOptOut: true, callback: callback)
+        wait(for: [gotResults], timeout: timeout)
+    }
+
+    func testErrorCallbacks() {
+        let audio = "This is bogus input".data(using: .utf8)!
+
+        var settings = RecognitionSettings(contentType: "audio/wav")
+        settings.inactivityTimeout = 5
+        settings.interimResults = false
+
+        let gotError = self.expectation(description: "onError received")
+        gotError.assertForOverFulfill = false
+
+        var callback = RecognizeCallback()
+        callback.onError = { _ in
+            gotError.fulfill()
+        }
+
+        speechToText.recognizeUsingWebSocket(audio: audio, settings: settings, model: "en-US_NarrowbandModel", learningOptOut: true, callback: callback)
+        wait(for: [gotError], timeout: timeout)
+        // onDisconnected not called because session was freed
+    }
+
+    // MARK: - Results Accumulator
 
     func testResultsAccumulator() {
         let results1 = """
-            {
-              "results": [{
-                "alternatives": [{
-                  "transcript": "the quick "
-                }],
-                "final": false
-              }],
-              "result_index": 0
-            }
-            """
+        {
+          "results": [{
+            "alternatives": [{
+              "transcript": "the quick "
+            }],
+            "final": false
+          }],
+          "result_index": 0
+        }
+        """
 
         let results2 = """
+        {
+          "results": [{
+            "alternatives": [{
+              "confidence": 0.922,
+              "transcript": "the quick brown fox"
+            }],
+            "final": true
+          }],
+          "result_index": 0,
+          "speaker_labels": [
             {
-              "results": [{
-                "alternatives": [{
-                  "confidence": 0.922,
-                  "transcript": "the quick brown fox"
-                }],
-                "final": true
-              }],
-              "result_index": 0,
-              "speaker_labels": [
-                {
-                  "from": 0.68,
-                  "to": 1.19,
-                  "speaker": 2,
-                  "confidence": 0.418,
-                  "final": false
-                },
-                {
-                  "from": 1.47,
-                  "to": 1.93,
-                  "speaker": 1,
-                  "confidence": 0.521,
-                  "final": false
-                }
-              ]
+              "from": 0.68,
+              "to": 1.19,
+              "speaker": 2,
+              "confidence": 0.418,
+              "final": false
+            },
+            {
+              "from": 1.47,
+              "to": 1.93,
+              "speaker": 1,
+              "confidence": 0.521,
+              "final": false
             }
-            """
+          ]
+        }
+        """
 
         let results3 = """
+        {
+          "results": [{
+            "alternatives": [{
+              "confidence": 0.873,
+              "transcript": "jumps over the lazy dog"
+            }],
+            "final": true
+          }],
+          "result_index": 1,
+          "speaker_labels": [
             {
-              "results": [{
-                "alternatives": [{
-                  "confidence": 0.873,
-                  "transcript": "jumps over the lazy dog"
-                }],
-                "final": true
-              }],
-              "result_index": 1,
-              "speaker_labels": [
-                {
-                  "from": 1.96,
-                  "to": 2.59,
-                  "speaker": 2,
-                  "confidence": 0.418,
-                  "final": false
-                }
-              ]
+              "from": 1.96,
+              "to": 2.59,
+              "speaker": 2,
+              "confidence": 0.418,
+              "final": false
             }
-            """
+          ]
+        }
+        """
 
         var accumulator = SpeechRecognitionResultsAccumulator()
         accumulator.add(results: try! JSONDecoder().decode(SpeechRecognitionResults.self, from: results1.data(using: .utf8)!))
@@ -553,7 +809,7 @@ class SpeechToTextRecognizeTests: XCTestCase {
         XCTAssertEqual(accumulator.bestTranscript, "the quick brown fox jumps over the lazy dog")
     }
 
-     // MARK: - Transcribe Streaming
+    // MARK: - Transcribe Streaming
 
     func testTranscribeStreaming() {
         print("")
@@ -565,7 +821,7 @@ class SpeechToTextRecognizeTests: XCTestCase {
         print("")
     }
 
-     // MARK: - Validation Functions
+    // MARK: - Validation Functions
 
     func validateSTTResults(results: SpeechRecognitionResults, settings: RecognitionSettings) {
         guard let results = results.results else { return }
@@ -576,8 +832,8 @@ class SpeechToTextRecognizeTests: XCTestCase {
 
     func validateSTTResult(result: SpeechRecognitionResult, settings: RecognitionSettings) {
 
-        XCTAssertNotNil(result.finalResults)
-        let final = result.finalResults
+        XCTAssertNotNil(result.final)
+        let final = result.final
 
         XCTAssertNotNil(result.alternatives)
         var alternativesWithConfidence = 0
@@ -629,8 +885,7 @@ class SpeechToTextRecognizeTests: XCTestCase {
         transcription: SpeechRecognitionAlternative,
         best: Bool,
         final: Bool,
-        settings: RecognitionSettings)
-    {
+        settings: RecognitionSettings) {
         XCTAssertNotNil(transcription.transcript)
         XCTAssertGreaterThan(transcription.transcript.count, 0)
 

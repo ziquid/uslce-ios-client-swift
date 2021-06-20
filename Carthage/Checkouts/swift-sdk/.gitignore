@@ -1,6 +1,7 @@
 # Custom
-Source/SupportingFiles/Credentials.swift
-Source/SupportingFiles/WatsonCredentials.swift
+Sources/SupportingFiles/Credentials.swift
+Sources/SupportingFiles/WatsonCredentials.swift
+Tests/CompareComplyV1Tests/Resources/cloud-object-storage-credentials*
 
 # Build generated
 build/
@@ -40,3 +41,12 @@ Carthage/
 # swagger-codegen
 .swagger-codegen-ignore
 .swagger-codegen/
+.openapi-generator-ignore
+.openapi-generator/
+
+# ignore detect secrets files
+.pre-commit-config.yaml
+.secrets.baseline
+
+# swift package manager
+.swiftpm/

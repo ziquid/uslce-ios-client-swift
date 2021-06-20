@@ -1,5 +1,5 @@
 /**
- * Copyright IBM Corporation 2017
+ * (C) Copyright IBM Corp. 2017, 2020.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@
 import XCTest
 import Foundation
 import NaturalLanguageUnderstandingV1
-import RestKit
 
 class NaturalLanguageUnderstandingTests: XCTestCase {
 
@@ -59,14 +58,9 @@ class NaturalLanguageUnderstandingTests: XCTestCase {
 
     /** Instantiate Natural Language Understanding instance. */
     func instantiateNaturalLanguageUnderstanding() {
-        let version = "2018-09-14"
-        if let apiKey = WatsonCredentials.NaturalLanguageUnderstandingAPIKey {
-            naturalLanguageUnderstanding = NaturalLanguageUnderstanding(version: version, apiKey: apiKey)
-        } else {
-            let username = WatsonCredentials.NaturalLanguageUnderstandingUsername
-            let password = WatsonCredentials.NaturalLanguageUnderstandingPassword
-            naturalLanguageUnderstanding = NaturalLanguageUnderstanding(username: username, password: password, version: version)
-        }
+        let authenticator = WatsonIAMAuthenticator.init(apiKey: WatsonCredentials.NaturalLanguageUnderstandingAPIKey)
+        naturalLanguageUnderstanding = NaturalLanguageUnderstanding(version: versionDate, authenticator: authenticator)
+
         if let url = WatsonCredentials.NaturalLanguageUnderstandingURL {
             naturalLanguageUnderstanding.serviceURL = url
         }
@@ -76,31 +70,16 @@ class NaturalLanguageUnderstandingTests: XCTestCase {
 
     func loadHTML() {
         #if os(Linux)
-            let file = URL(fileURLWithPath: "Tests/NaturalLanguageUnderstandingV1Tests/testArticle.html").path
-            html = try! String(contentsOfFile: file, encoding: .utf8)
+        let file = URL(fileURLWithPath: "Tests/NaturalLanguageUnderstandingV1Tests/testArticle.html").path
+        html = try! String(contentsOfFile: file, encoding: .utf8)
         #else
-            let bundle = Bundle(for: type(of: self))
-            guard let file = bundle.path(forResource: "testArticle", ofType: "html") else {
-                XCTFail("Unable to locate testArticle.html")
-                return
-            }
+        let bundle = Bundle(for: type(of: self))
+        guard let file = bundle.path(forResource: "testArticle", ofType: "html") else {
+            XCTFail("Unable to locate testArticle.html")
+            return
+        }
         html = try! String(contentsOfFile: file)
         #endif
-    }
-
-    /** Fail false negatives. */
-    func failWithError(error: Error) {
-        XCTFail("Positive test failed with error: \(error)")
-    }
-
-    /** Fail false positives. */
-    func failWithResult<T>(result: T) {
-        XCTFail("Negative test returned a result.")
-    }
-
-    /** Fail false positives. */
-    func failWithResult() {
-        XCTFail("Negative test returned a result.")
     }
 
     /** Wait for expectations. */
@@ -118,9 +97,12 @@ class NaturalLanguageUnderstandingTests: XCTestCase {
         let expectation = self.expectation(description: description)
         let concepts = ConceptsOptions(limit: 5)
         let features = Features(concepts: concepts)
-        let parameters = Parameters(features: features, html: html)
-        naturalLanguageUnderstanding.analyze(parameters: parameters, failure: failWithError) {
-            _ in
+        naturalLanguageUnderstanding.analyze(features: features, html: html) {
+            _, error in
+
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+            }
             expectation.fulfill()
         }
         waitForExpectations()
@@ -132,9 +114,12 @@ class NaturalLanguageUnderstandingTests: XCTestCase {
         let expectation = self.expectation(description: description)
         let concepts = ConceptsOptions(limit: 5)
         let features = Features(concepts: concepts)
-        let parameters = Parameters(features: features, text: text)
-        naturalLanguageUnderstanding.analyze(parameters: parameters, failure: failWithError) {
-            _ in
+        naturalLanguageUnderstanding.analyze(features: features, text: text) {
+            _, error in
+
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+            }
             expectation.fulfill()
         }
         waitForExpectations()
@@ -146,9 +131,12 @@ class NaturalLanguageUnderstandingTests: XCTestCase {
         let expectation = self.expectation(description: description)
         let concepts = ConceptsOptions(limit: 5)
         let features = Features(concepts: concepts)
-        let parameters = Parameters(features: features, url: url, returnAnalyzedText: true)
-        naturalLanguageUnderstanding.analyze(parameters: parameters, failure: failWithError) {
-            _ in
+        naturalLanguageUnderstanding.analyze(features: features, url: url, returnAnalyzedText: true) {
+            _, error in
+
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+            }
             expectation.fulfill()
         }
         waitForExpectations()
@@ -169,9 +157,18 @@ class NaturalLanguageUnderstandingTests: XCTestCase {
         """
         let concepts = ConceptsOptions(limit: 5)
         let features = Features(concepts: concepts)
-        let parameters = Parameters(features: features, text: text, returnAnalyzedText: true)
-        naturalLanguageUnderstanding.analyze(parameters: parameters, failure: failWithError) {
-            results in
+        naturalLanguageUnderstanding.analyze(features: features, text: text, returnAnalyzedText: true) {
+            response, error in
+
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+                return
+            }
+            guard let results = response?.result else {
+                XCTFail(missingResultMessage)
+                return
+            }
+
             XCTAssertEqual(results.analyzedText, text)
             guard let concepts = results.concepts else {
                 XCTAssertNil(results.concepts)
@@ -192,9 +189,18 @@ class NaturalLanguageUnderstandingTests: XCTestCase {
         let description = "Analyze HTML for concepts."
         let expectation = self.expectation(description: description)
         let features = Features(concepts: ConceptsOptions())
-        let parameters = Parameters(features: features, html: html, returnAnalyzedText: true)
-        naturalLanguageUnderstanding.analyze(parameters: parameters, failure: failWithError) {
-            results in
+        naturalLanguageUnderstanding.analyze(features: features, html: html, returnAnalyzedText: true) {
+            response, error in
+
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+                return
+            }
+            guard let results = response?.result else {
+                XCTFail(missingResultMessage)
+                return
+            }
+
             XCTAssertNotNil(results.analyzedText)
             XCTAssertNotNil(results.concepts)
             guard let concepts = results.concepts else {
@@ -216,14 +222,23 @@ class NaturalLanguageUnderstandingTests: XCTestCase {
         let description = "Analyze text for emotions."
         let expectation = self.expectation(description: description)
         let text = "But I believe this thinking is wrong. I believe the road of true democracy remains the better path. "
-                 + "I believe that in the 21st century, economies can only grow to a certain point until they need to open up -- "
-                 + "because entrepreneurs need to access information in order to invent; young people need a global education "
-                 + "in order to thrive; independent media needs to check the abuses of power."
+            + "I believe that in the 21st century, economies can only grow to a certain point until they need to open up -- "
+            + "because entrepreneurs need to access information in order to invent; young people need a global education "
+            + "in order to thrive; independent media needs to check the abuses of power."
         let emotion = EmotionOptions(targets: ["democracy", "entrepreneurs", "media", "economies"])
         let features = Features(emotion: emotion)
-        let parameters = Parameters(features: features, text: text, returnAnalyzedText: true)
-        naturalLanguageUnderstanding.analyze(parameters: parameters, failure: failWithError) {
-            results in
+        naturalLanguageUnderstanding.analyze(features: features, text: text, returnAnalyzedText: true) {
+            response, error in
+
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+                return
+            }
+            guard let results = response?.result else {
+                XCTFail(missingResultMessage)
+                return
+            }
+
             XCTAssertEqual(results.analyzedText, text)
             guard let emotion = results.emotion else {
                 XCTAssertNil(results.emotion)
@@ -257,13 +272,22 @@ class NaturalLanguageUnderstandingTests: XCTestCase {
         let description = "Analyze text for emotions without targets."
         let expectation = self.expectation(description: description)
         let text = "But I believe this thinking is wrong. I believe the road of true democracy remains the better path. "
-                 + "I believe that in the 21st century, economies can only grow to a certain point until they need to open up -- "
-                 + "because entrepreneurs need to access information in order to invent; young people need a global education "
-                 + "in order to thrive; independent media needs to check the abuses of power."
+            + "I believe that in the 21st century, economies can only grow to a certain point until they need to open up -- "
+            + "because entrepreneurs need to access information in order to invent; young people need a global education "
+            + "in order to thrive; independent media needs to check the abuses of power."
         let features = Features(emotion: EmotionOptions())
-        let parameters = Parameters(features: features, text: text, returnAnalyzedText: true)
-        naturalLanguageUnderstanding.analyze(parameters: parameters, failure: failWithError) {
-            results in
+        naturalLanguageUnderstanding.analyze(features: features, text: text, returnAnalyzedText: true) {
+            response, error in
+
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+                return
+            }
+            guard let results = response?.result else {
+                XCTFail(missingResultMessage)
+                return
+            }
+
             XCTAssertEqual(results.analyzedText, text)
             guard let emotionResults = results.emotion else {
                 XCTAssertNil(results.emotion)
@@ -290,15 +314,24 @@ class NaturalLanguageUnderstandingTests: XCTestCase {
         let description = "Analyze text for entities and its corresponding sentiment values."
         let expectation = self.expectation(description: description)
         let features = Features(entities: EntitiesOptions(limit: 2, sentiment: true))
-        let parameters = Parameters(features: features, text: self.text, returnAnalyzedText: true)
-        naturalLanguageUnderstanding.analyze(parameters: parameters, failure: failWithError) {
-            results in
+        naturalLanguageUnderstanding.analyze(features: features, text: self.text, returnAnalyzedText: true) {
+            response, error in
+
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+                return
+            }
+            guard let results = response?.result else {
+                XCTFail(missingResultMessage)
+                return
+            }
+
             XCTAssertEqual(results.analyzedText, self.text)
             guard let entityResults = results.entities else {
                 XCTAssertNil(results.entities)
                 return
             }
-            XCTAssertEqual(2, entityResults.count)
+            XCTAssertEqual(1, entityResults.count)
             for result in entityResults {
                 XCTAssertNotNil(result.count)
                 XCTAssertNotNil(result.relevance)
@@ -316,9 +349,18 @@ class NaturalLanguageUnderstandingTests: XCTestCase {
         let description = "Analyze text for keywords and its corresponding sentiment values."
         let expectation = self.expectation(description: description)
         let features = Features(keywords: KeywordsOptions(sentiment: true))
-        let parameters = Parameters(features: features, text: self.text, returnAnalyzedText: true)
-        naturalLanguageUnderstanding.analyze(parameters: parameters, failure: failWithError) {
-            results in
+        naturalLanguageUnderstanding.analyze(features: features, text: self.text, returnAnalyzedText: true) {
+            response, error in
+
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+                return
+            }
+            guard let results = response?.result else {
+                XCTFail(missingResultMessage)
+                return
+            }
+
             XCTAssertEqual(results.analyzedText, self.text)
             guard let keywords = results.keywords else {
                 XCTAssertNil(results.keywords)
@@ -338,13 +380,22 @@ class NaturalLanguageUnderstandingTests: XCTestCase {
     func testAnalyzeHTMLForMetadata() {
         let description = "Analyze html for metadata."
         let expectation = self.expectation(description: description)
-        let features = Features(metadata: MetadataOptions())
+        let features = Features(metadata: ["test": .string("")])
         let fileTitle = "This 5,000-year-old recipe for beer actually sounds pretty tasty"
         let fileDate = "2016-05-23T20:13:00"
         let fileAuthor = "Annalee Newitz"
-        let parameters = Parameters(features: features, html: html, returnAnalyzedText: true)
-        naturalLanguageUnderstanding.analyze(parameters: parameters, failure: failWithError) {
-            results in
+        naturalLanguageUnderstanding.analyze(features: features, html: html, returnAnalyzedText: true) {
+            response, error in
+
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+                return
+            }
+            guard let results = response?.result else {
+                XCTFail(missingResultMessage)
+                return
+            }
+
             XCTAssertEqual(results.language, "en")
             XCTAssertEqual(results.metadata?.title, fileTitle)
             XCTAssertEqual(results.metadata?.publicationDate, fileDate)
@@ -360,9 +411,18 @@ class NaturalLanguageUnderstandingTests: XCTestCase {
         let description = "Analyze text for relations."
         let expectation = self.expectation(description: description)
         let features = Features(relations: RelationsOptions())
-        let parameters = Parameters(features: features, text: self.text, returnAnalyzedText: true)
-        naturalLanguageUnderstanding.analyze(parameters: parameters, failure: failWithError) {
-            results in
+        naturalLanguageUnderstanding.analyze(features: features, text: self.text, returnAnalyzedText: true) {
+            response, error in
+
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+                return
+            }
+            guard let results = response?.result else {
+                XCTFail(missingResultMessage)
+                return
+            }
+
             XCTAssertEqual(results.analyzedText, self.text)
             XCTAssertEqual(results.language, "en")
             XCTAssertNotNil(results.relations)
@@ -377,9 +437,18 @@ class NaturalLanguageUnderstandingTests: XCTestCase {
         let expectation = self.expectation(description: description)
         let semanticRoles = SemanticRolesOptions(limit: 7, keywords: true, entities: true)
         let features = Features(semanticRoles: semanticRoles)
-        let param = Parameters(features: features, text: text, returnAnalyzedText: true)
-        naturalLanguageUnderstanding.analyze(parameters: param, failure: failWithError) {
-            results in
+        naturalLanguageUnderstanding.analyze(features: features, text: text, returnAnalyzedText: true) {
+            response, error in
+
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+                return
+            }
+            guard let results = response?.result else {
+                XCTFail(missingResultMessage)
+                return
+            }
+
             XCTAssertEqual(results.analyzedText, self.text)
             XCTAssertEqual(results.language, "en")
             XCTAssertNotNil(results.semanticRoles)
@@ -405,9 +474,18 @@ class NaturalLanguageUnderstandingTests: XCTestCase {
         let description = "Analyze text and verify sentiment returned."
         let expectation = self.expectation(description: description)
         let features = Features(sentiment: SentimentOptions(document: true, targets: ["Elliot Turner", "traction"]))
-        let param = Parameters(features: features, text: text, returnAnalyzedText: true)
-        naturalLanguageUnderstanding.analyze(parameters: param, failure: failWithError) {
-            results in
+        naturalLanguageUnderstanding.analyze(features: features, text: text, returnAnalyzedText: true) {
+            response, error in
+
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+                return
+            }
+            guard let results = response?.result else {
+                XCTFail(missingResultMessage)
+                return
+            }
+
             XCTAssertEqual(results.analyzedText, self.text)
             XCTAssertEqual(results.language, "en")
             XCTAssertNotNil(results.sentiment)
@@ -428,9 +506,18 @@ class NaturalLanguageUnderstandingTests: XCTestCase {
         let description = "Analyze text and verify sentiment returned."
         let expectation = self.expectation(description: description)
         let features = Features(sentiment: SentimentOptions(document: true))
-        let param = Parameters(features: features, text: text, returnAnalyzedText: true)
-        naturalLanguageUnderstanding.analyze(parameters: param, failure: failWithError) {
-            results in
+        naturalLanguageUnderstanding.analyze(features: features, text: text, returnAnalyzedText: true) {
+            response, error in
+
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+                return
+            }
+            guard let results = response?.result else {
+                XCTFail(missingResultMessage)
+                return
+            }
+
             XCTAssertEqual(results.analyzedText, self.text)
             XCTAssertEqual(results.language, "en")
             XCTAssertNotNil(results.sentiment)
@@ -446,16 +533,26 @@ class NaturalLanguageUnderstandingTests: XCTestCase {
     func testAnalyzeTextForCategories() {
         let description = "Analyze text and verify categories returned."
         let expectation = self.expectation(description: description)
-        let features = Features(categories: CategoriesOptions())
-        let param = Parameters(features: features, text: text, returnAnalyzedText: true)
-        naturalLanguageUnderstanding.analyze(parameters: param, failure: failWithError) {
-            results in
+        let features = Features(categories: CategoriesOptions(explanation: true))
+        naturalLanguageUnderstanding.analyze(features: features, text: text, returnAnalyzedText: true) {
+            response, error in
+
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+                return
+            }
+            guard let results = response?.result else {
+                XCTFail(missingResultMessage)
+                return
+            }
+
             XCTAssertEqual(results.analyzedText, self.text)
             XCTAssertEqual(results.language, "en")
             XCTAssertNotNil(results.categories)
             for category in results.categories! {
                 XCTAssertNotNil(category.label)
                 XCTAssertNotNil(category.score)
+                XCTAssertNotNil(category.explanation?.relevantText)
             }
             expectation.fulfill()
         }
@@ -473,11 +570,20 @@ class NaturalLanguageUnderstandingTests: XCTestCase {
             relations: RelationsOptions(model: "en-news"),
             semanticRoles: SemanticRolesOptions(limit: 5, keywords: true, entities: true),
             sentiment: SentimentOptions(document: true, targets: ["happy"]),
-            categories: CategoriesOptions(additionalProperties: ["example-key": .string("example-value")])
+            categories: CategoriesOptions()
         )
-        let parameters = Parameters(features: features, text: text, returnAnalyzedText: true)
-        naturalLanguageUnderstanding.analyze(parameters: parameters, failure: failWithError) {
-            results in
+        naturalLanguageUnderstanding.analyze(features: features, text: text, returnAnalyzedText: true) {
+            response, error in
+
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+                return
+            }
+            guard let results = response?.result else {
+                XCTFail(missingResultMessage)
+                return
+            }
+
             XCTAssertEqual(results.analyzedText, self.text)
             XCTAssertEqual(results.language, "en")
             XCTAssertNotNil(results.entities)
@@ -490,15 +596,32 @@ class NaturalLanguageUnderstandingTests: XCTestCase {
     func testDeleteModel() {
         let description = "Delete an invalid model."
         let expectation = self.expectation(description: description)
-        let failure = { (error: Error) in expectation.fulfill() }
-        naturalLanguageUnderstanding.deleteModel(modelID: "invalid_model_id", failure: failure, success: failWithResult)
+        naturalLanguageUnderstanding.deleteModel(modelID: "invalid_model_id") {
+            _, error in
+
+            if error == nil {
+                XCTFail(missingErrorMessage)
+            }
+            expectation.fulfill()
+        }
         waitForExpectations()
     }
 
     func testListModels() {
         let description = "List available models from Watson Knowledge Studio."
         let expectation = self.expectation(description: description)
-        naturalLanguageUnderstanding.listModels(failure: failWithError) { results in
+        naturalLanguageUnderstanding.listModels {
+            response, error in
+
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+                return
+            }
+            guard let results = response?.result else {
+                XCTFail(missingResultMessage)
+                return
+            }
+
             XCTAssertNotNil(results.models)
             expectation.fulfill()
         }

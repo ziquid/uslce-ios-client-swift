@@ -1,3 +1,889 @@
+
+# 4.0.0 (Preview) (https://github.com/watson-developer-cloud/swift-sdk/compare/3.6.0...4.0.0) (2020-10-29)
+
+## Breaking Changes
+
+### All Services
+* `init` now accepts a `serviceName` parameter to set the default service name of the instance
+
+### AssistantV1 Service
+
+* Now Accepts `includeCount` Parameter: `listWorkspaces()`, `listIntents()`, `listExamples()`, `listCounterexamples()`, `listEntities()`, `listValues()`, `listSynonyms()`, `listDialogNodes()`
+
+* `createWorkspace()`: function parameter reordering
+
+* `updateWorkspace()`: function parameter reordering
+
+* `createDialogNode()`: parameter `context` type change from `[Sting: JSON]?` to `DialogNodeContext?`
+
+* `updateDialogNode()`: parameter `newContext` type change from `[Sting: JSON]?` to `DialogNodeContext?`
+
+* `bulkClassify()`: function added - Identify intents and entities in multiple user utterances.
+
+
+### AssistantV1 Models
+
+#### Models Added
+`BulkClassifyOutput`, `BulkClassifyResponse`, `BulkClassifyUtterance`, `DialogNodeContext`, `DialogNodeOutputConnectToAgentTransferInfo`, `DialogNodeOutputGenericDialogNodeOutputResponseTypeConnectToAgent`, `DialogNodeOutputGenericDialogNodeOutputResponseTypeImage`, `DialogNodeOutputGenericDialogNodeOutputResponseTypeOption`, `DialogNodeOutputGenericDialogNodeOutputResponseTypePause`, `DialogNodeOutputGenericDialogNodeOutputResponseTypeSearchSkill`, `DialogNodeOutputGenericDialogNodeOutputResponseTypeText`, `RuntimeResponseGenericRuntimeResponseTypeConnectToAgent`, `RuntimeResponseGenericRuntimeResponseTypeImage`, `RuntimeResponseGenericRuntimeResponseTypeOption`, `RuntimeResponseGenericRuntimeResponseTypePause`, `RuntimeResponseGenericRuntimeResponseTypeSuggestion`, `RuntimeResponseGenericRuntimeResponseTypeText`
+
+#### Models Removed
+`CreateWorkspace`, `DialogNodeSuggestionOutput`, `DialogSuggestionResponseGeneric`, `SystemResponse`, `UpdateCounterexample`, `UpdateDialogNode`, `UpdateEntity`, `UpdateExample`, `UpdateIntent`, `UpdateSynonym`, `UpdateValue`, `UpdateWorkspace`, `WorkspaceSystemSettings`, `WorkspaceSystemSettingsDisambiguation`, `WorkspaceSystemSettingsOffTopic`, `WorkspaceSystemSettingsSystemEntities`, `WorkspaceSystemSettingsTooling`, `WorkspaceSystemSettings`,
+
+#### Model Properties Changed
+`Context`
+* `system` type changed from `SystemResponse?` to `[String: JSON]?`
+
+`DialogSuggestion`
+* `output` type changed from `DialogSuggestionOutput?` to `[String: JSON]?`
+
+`Counterexample`, `CreateEntity`, `CreateIntent`, `CreateValue`, `Example`, `Synonym`
+* `created` read only
+* `updated` read only
+
+`DialogNodeOutput`
+* `integrations` added
+
+`MessageInput`
+
+* `suggestedText` read only
+* `originalText` read only
+
+`MessageRequest`
+
+* `actions` read only
+
+`Webhook`
+
+* `headers` renamed to `xheaders`
+
+#### Multiple/Unique Changes
+`DialogNode`
+* `context` type changed from `[String: JSON]?` to `DialogNodeContext?`
+* `disabled` parameter removed
+* `created` parameter removed
+* `updated` parameter removed
+
+`DialogNodeOutputGeneric`
+* Changed from struct to enum to discriminate between response types
+
+`RuntimeResponseGeneric`
+* Changed from struct to enum to discriminate between response types
+
+
+### AssistantV2 Service
+
+* `bulkClassify()`: function added - Identify intents and entities in multiple user utterances.
+
+### AssistantV2 Models
+
+#### Models Added
+`BulkClassifyOutput`, `BulkClassifyResponse`, `BulkClassifyUtterance`, `DialogNodeOutputConnectToAgentTransferInfo`, `RuntimeResponseGenericRuntimeResponseTypeConnectToAgent`, `RuntimeResponseGenericRuntimeResponseTypeImage`, `RuntimeResponseGenericRuntimeResponseTypeOption`, `RuntimeResponseGenericRuntimeResponseTypePause`, `RuntimeResponseGenericRuntimeResponseTypeSuggestion`, `RuntimeResponseGenericRuntimeResponseTypeText`
+
+#### Models Removed
+`MessageContextSkills`, `MessageRequestStateless`
+
+#### Model Properties Changed
+`MessageContextGlobal`
+* `system` read only
+
+`MessageContext`, `MessageContextStateless`
+* `skills` type changed from `MessageContextSkills?` to `[String: MessageContextSkill]?`
+
+`MessageInputOptions` 
+* model parameters repositioned
+
+#### Multiple/Unique Changes
+`RuntimeResponseGeneric`
+* Changed from struct to enum to discriminate between response types
+
+### CompareComplyV1 Service
+
+* `listFeedback()`: `before` and `after` parameters removed
+
+### CompareComplyV1 Models
+
+#### Models Removed
+`FeedbackInput`
+
+#### Model Properties Changed
+`Category`, `TypeLabel`
+* `modification` added
+
+`OriginalLabelsOut`, `UpdatedLabelsOut`
+* `modification` removed
+
+### DiscoveryV1 Service
+
+* No changes
+
+### DiscoveryV1 Models
+
+#### Models Removed
+`CollQueryLarge`, `CreateCollectionRequest`, `CreateEnvironmentRequest`, `CreateEventObject`, `FedQueryLarge`, `GatewayName`, `GenericQueryAggregation`, `NewTrainingQuery`, `NluEnrichmentCategories`, `QueryLarge`, `TokenDict`, `TrainingExamplePatch`, `UpdateCollectionRequest`, `UpdateEnvironmentRequest`
+#### Model Prroperties Changed
+`Configuration`
+* `created` read only
+* `updated` read only
+* `configurationID` read only
+
+`Credentials`
+* `credentialID` read only
+
+`EventData`
+* `queryID` read only
+
+`NluEnrichmentFeatures`
+* `categories` type changed from `NluEnrichmentCategories?` to `[String: JSON]?`
+
+### DiscoveryV2 Service
+
+* `analyzeDocument()`: function added - Process a document using the specified collection's settings and return it for realtime use. - Currently CP4D only
+
+### DiscoveryV2 Models
+
+#### Models Added
+`AnalyzedDocument`, `AnalyzedResult`, `QueryResponsePassage`, `
+#### Models Removed
+`GenericQueryAggregation`, `ProjectCreation`, `ProjectName`, `QueryLarge`, `QueryNoticesResult`, `UpdateCollection`, `UpdateEnrichment`
+#### Model Properties Changed
+`CollectionDetails`
+* `collectionID` read only
+* `created` read only
+
+`QueryResponse`
+* `passages` added
+
+`TrainingExample`
+* `created` read only
+* `updated` read only
+
+`TraningQuery`
+* `created` read only
+* `updated` read only
+* `queryID` read only
+
+### LanguageTranslator Service
+* No changes
+
+### LanguageTranslatorV3 Models
+
+#### Models Removed
+`TranslateRequest`
+
+### NaturalLanguageClassifierV1 Service
+* No changes
+
+### NaturalLanguageClassifierV1 Models
+
+#### Models Removed
+`ClassifyCollectionInput`
+
+### NaturalLanguageUnderstanding Service
+* No changes
+
+### NaturalLanguageUnderstandingV1 Models
+
+#### Models Added
+`FeaturesResultsMetadata`
+#### Models Removed
+`AnalysisResultsMetadata`, `MetadataOptions`, `Parameters`
+#### Model Properties Changed
+`AnalysisResults`
+* `metadata` type changed from `AnalysisResultsMetadata?` to `FeaturesResultsMetadata?`
+
+`Features`
+* `metadata` type changed from `MetadataOptions?` to `[String: JSON]?`
+
+### PersonalityInsights Service
+IBM Watson™ Personality Insights is discontinued. For a period of one year from 1 December 2020, you will still be able to use Watson Personality Insights. However, as of 1 December 2021, the offering will no longer be available.
+
+As an alternative, we encourage you to consider migrating to IBM Watson™ Natural Language Understanding, a service on IBM Cloud® that uses deep learning to extract data and insights from text such as keywords, categories, sentiment, emotion, and syntax to provide insights for your business or industry. For more information, see About Natural Language Understanding.
+
+* `profile()`: csvHeaders parameter added
+
+* `profileAsCSV()`: return type changed from `WatsonResponse<String>?` to `WatsonResponse<Data>?`
+
+### PersonalityInightsV3 Models
+* No changes
+
+### SpeechToTextV1 Service
+* `trainLanguageModel()`: return type changed from `WatsonResponse<Void>?` to `WatsonResponse<TrainingResponse>?`
+
+* `trainAcousticModel()`: return type changed from `WatsonResponse<Void>?` to `WatsonResponse<TrainingResponse>?`
+
+### SpeechToTextV1 Models
+* No changes
+
+#### Models Removed
+`CreateAcousticModel`, `CreateLanguageModel`, `CustomWords`
+
+### TextToSpeechV1 Service
+* `createVoiceModel()`: function changed to `createCustomModel()` now returning `WatsonResponse<CustomModel>?`
+
+* `listVoiceModels()`: function changed to `listCustomModels()` now returning `WatsonResponse<CustomModels>?`
+
+* `updateVoiceModel()`: function changed to `updateCustomModel()`
+
+* `getVoiceModel()`: function changed to `getCustomModel()` now returning `WatsonResponse<CustomModel>?`
+
+* `deleteVoiceModel()`: function changed to `deleteCustomModel()`
+
+### TextToSpeechV1 Models
+
+#### Models Added
+`CustomModel`, `CustomModels`
+#### Models Removed
+`CreateVoiceModel`, `Text`, `UpdateVoiceModel`, `VoiceModel`, `VoiceModels`
+#### Model Properties Changed
+`Voice`
+* customization type changed from `VoiceModel?` to `CustomModel?`
+
+### ToneAnalyzerV3 Models
+
+#### Models Removed
+`ToneChatInput`
+
+### VisualRecognitionV3 Service
+IBM Watson™ Visual Recognition is discontinued. Existing instances are supported until 1 December 2021, but as of 7 January 2021, you can't create instances. Any instance that is provisioned on 1 December 2021 will be deleted.
+
+### VisualRecognitionV3 Models
+* No changes
+
+### VisualRecognitionV4 Service
+IBM Watson™ Visual Recognition is discontinued. Existing instances are supported until 1 December 2021, but as of 7 January 2021, you can't create instances. Any instance that is provisioned on 1 December 2021 will be deleted.
+
+* `getTrainingUsage()`: `startTime` and `endTime` parameter types changed from `String?` to `Date?`
+
+### VisualRecognitionV4 Models
+
+#### Models Added
+`CollectionTrainingStatus`, `ObjectDetailLocation`
+#### Models Removed
+`BaseCollection`, `BaseTrainingDataObjects`
+#### Model Properties Changed
+`Collection`
+* `trainingStatus` type changed from `TrainingStatus` to `CollectionTrainingStatus`
+
+`ObjectDetail`
+* `location` type changed from `Location` to `ObjectDetailLocation`
+
+`UpdateObjectMetadata`
+* `count` read only
+
+## 3.0.0 (Preview) (https://github.com/watson-developer-cloud/swift-sdk/compare/2.3.0...3.0.0) (2019-10-04)
+
+### Breaking Changes
+
+* Authentication: new authentication scheme for all Watson services implemented 
+
+#### AssistantV1
+
+`Assistant.swift`
+* `init` now accepts an `Authenticator` instead of raw credentials
+* Linux environment `init` is now a throwable `init` instead of an `init?`
+* `listExamples()` no longer accepts the `includeCount` parameter
+* `listCounterexamples()` no longer accepts the `includeCount` parameter
+* `listEntities()` no longer accepts the `includeCount` parameter
+* `listValues()` no longer accepts the `includeCount` parameter
+* `listSynonyms()` no longer accepts the `includeCount` parameter
+* `updateValue()` parameter `newValueType` renamed to `newType`
+* `createDialogNode()` parameter `nodeType` renamed to `type`
+* `updateDialogNode()` parameter `newNodeType` renamed to `newType`
+
+#### AssistantV1 Models
+
+`CreateValue.swift`
+* `ValueType` enum renamed to `TypeEnum`
+* `valueType` string named to `type`
+
+`DialogNode.swift`
+* `NodeType` enum renamed to `TypeEnum`
+* `nodeType` string renamed to `type`
+
+`DialogNodeAction.swift`
+* `ActionType` enum renamed to `TypeEnum`
+* `actionType` string renamed to `type`
+
+`DialogNodeOutputGeneric.swift`
+* `searchSkill` case added to `ResponseType` enum
+* `QueryType` enum added
+* `query` string added
+* `queryType` string added
+* `filter` string added
+* `discoveryVersion` string added
+
+`DialogSuggestion.swift`
+* `output` type changed from `[String: JSON]?` to `DialogSuggestionOutput?`
+
+`DialogSuggestionOutput.swift`
+* New model added
+
+`DialogSuggestionResponseGeneric.swift`
+* New model added
+
+`LogMessage.swift`
+* `additionalProperties` removed
+
+`RuntimeEntity.swift`
+* `additionalProperties` removed
+
+`RuntimeIntent.swift`
+* `additionalProperties` removed
+
+`DialogRuntimeResponseGeneric.swift`
+* File and model renamed to `RuntimeResponseGeneric`
+
+`UpdateDialogNode.swift`
+* `NodeType` enum renamed to `TypeEnum`
+* `nodeType` string renamed to `type`
+
+`UpdateValue.swift`
+* `ValueType` enum renamed to `TypeEnum`
+* `valueType` string renamed to `type`
+
+`Value.swift`
+* `ValueType` enum renamed to `TypeEnum`
+* `valueType` string renamed to `type`
+
+#### AssistantV2
+
+`Assistant.swift`
+* `init` now accepts an `Authenticator` instead of raw credentials
+* Linux environment `init` is now a throwable `init` instead of an `init?` 
+
+#### AssistantV2 Models
+
+`DialogNodeAction.swift`
+* `ActionType` enum renamed to `TypeEnum`
+* `actionType` string renamed to `type`
+
+`MessageOutput.swift`
+* `generic` type changed from `[DialogRuntimeResponseGeneric]?` to `[RuntimeResponseGeneric]?`
+
+`MessageRequestContext.swift`
+* Model removed
+
+`MessageResponseContext.swift`
+* Model removed
+
+`DialogRuntimeResponseGeneric.swift`
+* Model and file renamed to `RuntimeResponseGeneric`
+
+#### CompareComplyV1
+
+`CompareComply.swift`
+* `init` now accepts an `Authenticator` instead of raw credentials
+* Linux environment `init` is now a throwable `init` instead of an `init?` 
+
+#### CompareComplyV1 Models
+
+`ColumnHeaderTextsNormalized.swift`
+* Model removed
+
+`RowHeaderTexts.swift`
+* Model removed
+
+`RowHeaderTextsNormalized.swift`
+* Model removed
+
+#### DiscoveryV1
+
+`Discovery.swift`
+* `init` now accepts an `Authenticator` instead of raw credentials
+* Linux environment `init` is now a throwable `init` instead of an `init?`
+* `testConfigurationInEnvironment()` method removed
+* `query()` renamed parameter `returnFields` to `return`
+* `query()` renamed parameter `loggingOptOut` to `xWatsonLoggingOptOut`
+* `query()` removed parameter `collectionIDs`
+* `query()` added `spellingSuggestions` parameter
+* `queryNotices()` renamed parameter `returnFields` to `return`
+* `federatedQuery()` renamed parameter `returnFields` to `return`
+* `getAutocompletion()` method added (CloudPakForData only)
+* `queryRelations()` method removed
+
+#### DiscoveryV1 Models
+
+`CollQueryLarge.swift`
+* Model added
+
+`Completions.swift`
+* Model added (CloudPakForData only)
+
+`DocumentSnapshot.swift`
+* Model removed
+
+`Enrichment.swift`
+* `enrichmentName` string renamed to `enrichment`
+
+`FedQueryLarge.swift`
+* Model added
+
+`Field.swift`
+* `FieldType` enum renamed to `TypeEnum`
+* `fieldName` string renamed to `field`
+
+`QueryEntities.swift`
+* Model removed
+
+`QueryEntitiesContext.swift`
+* Model removed
+
+`QueryEntitiesEntity.swift`
+* Model removed
+
+`QueryEntitiesResponse.swift`
+* Model removed
+
+`QueryEvidence.swift`
+* Model removed
+
+`QueryFilterType.swift`
+* Model removed
+
+`QueryLarge.swift`
+* `returnFields` string renamed to `return`
+
+`QueryRelations.swift`
+* Model removed
+
+`QueryRelationsEntity.swift`
+* Model removed
+
+`QueryRelationsFilter.swift`
+* Model removed
+
+`QueryRelationsRelationship.swift`
+* Model removed
+
+`QueryResponse.swift`
+* `suggestedQuery` string added
+
+`TestDocument.swift`
+* Model removed
+
+#### LanguageTranslatorV3
+
+`LanguageTranslator.swift`
+* `init` now accepts an `Authenticator` instead of raw credentials
+* Linux environment `init` is now a throwable `init` instead of an `init?`
+* `listModels()` parameter `defaultModels` renamed to `default`
+
+#### LanguageTranslatorV3 Models
+
+`Translation.swift`
+* `translationOutput` string renamed to `translation`
+
+#### NaturalLanguageClassifierV1
+
+`NaturalLanguageClassifier.swift`
+* `init` now accepts an `Authenticator` instead of raw credentials
+* Linux environment `init` is now a throwable `init` instead of an `init?`
+* `createClassifier()` parameter `metadata` renamed to `trainingMetadata`
+
+#### NaturalLanguageClassifierV1 Models
+
+`AnalysisResultsSentiment.swift`
+* Model removed
+
+`DocumentEmotionResultsEmotion.swift`
+* Model removed
+
+`EntitiesResultEmotion.swift`
+* Model removed
+
+`EntitiesResultSentiment.swift`
+* Model removed
+
+`KeywordsResultEmotion.swift`
+* Model removed
+
+`KeywordsResultSentiment.swift`
+* Model removed
+
+`MetadataResult.swift`
+* Model removed
+
+`ParametersFeatures.swift`
+* Model removed
+
+`SemanticRolesAction.swift`
+* Model removed
+
+`SemanticRolesSubject.swift`
+* Model removed
+
+`SntaxOptions.swift`
+* `init()` method added
+
+`TargetedEmotionResultsEmotion.swift`
+* Model removed
+
+#### NaturalLanguageUnderstandingV1
+
+`NaturalLanguageUnderstanding.swift`
+* `init` now accepts an `Authenticator` instead of raw credentials
+* Linux environment `init` is now a throwable `init` instead of an `init?`
+
+#### PersonalityInsightsV3
+
+`PersonalityInsights.swift`
+* `init` now accepts an `Authenticator` instead of raw credentials
+* Linux environment `init` is now a throwable `init` instead of an `init?`
+
+#### SpeechToTextV1
+
+`SpeechToText.swift`
+* `init` now accepts an `Authenticator` instead of raw credentials
+* Linux environment `init` is now a throwable `init` instead of an `init?`
+* `recognize()` parameter `contentType` added
+* `createJob()` parameter `contentType` added
+* `addAudio()` parameter `contentType` added
+
+`SpeechToTextSession.swift` (WebSockets)
+* `init` now accepts an `Authenticator` instead of raw credentials
+* removed all `init` methods that accepted credentials
+
+`SpeechToTextSocket.swift` (WebSockets)
+* `init` now accepts an `Authenticator` instead of raw credentials
+
+#### SpeechToTextV1 Models
+
+`AudioListingContainer.swift`
+* Model removed
+
+`AudioListingDetails.swift`
+* Model removed
+
+`AudioResourceDetails.swift`
+* Model removed
+
+`CreateAcousticModel.swift`
+* New model IDs added
+
+`CreateLanguageModel.swift`
+* New model IDs added
+
+`SpeakerLabelsResult.swift`
+* `finalResults` bool renamed to `final`
+
+`SpeechRecognitionResult.swift`
+* `finalResults` bool renamed to `final`
+
+#### TextToSpeechV1
+
+`TextToSpeech.swift`
+* `init` now accepts an `Authenticator` instead of raw credentials
+* Linux environment `init` is now a throwable `init` instead of an `init?`
+* `synthesize()` parameter `accept` added
+
+#### TextToSpeechV1 Models
+
+`VoiceCustomization.swift`
+* Model removed
+
+#### ToneAnalyzerV3
+
+`ToneAnalyzer.swift`
+* `init` now accepts an `Authenticator` instead of raw credentials
+* Linux environment `init` is now a throwable `init` instead of an `init?`
+
+
+#### VisualRecognitionV3
+
+`VisualRecognition.swift`
+* `init` now accepts an `Authenticator` instead of raw credentials
+* Linux environment `init` is now a throwable `init` instead of an `init?`
+* `detectFaces()` removed
+
+`VisualRecognition+CoreML.swift`
+* `init` now accepts an `Authenticator` instead of raw credentials
+
+`VisualRecognition+UIImage.swift`
+* `detectFaces()` removed
+
+#### VisualRecognitionV3 Models
+
+`Class.swift`
+* `className` string renamed to `class`
+
+`ClassResult.swift`
+* `className` String renamed to `class`
+
+`FaceGender.swift`
+* Model removed
+
+`DetectedFaces.swift`
+* Model removed
+
+#### VisualRecognitionV4
+
+VisualRecognitionV4 added :tada:
+
+`
+
+### Breaking Changes
+
+* Authentication: new authentication scheme for all Watson services implemented
+* All services: breaking changes to model property names for service responses
+
+## 2.3.0 (https://github.com/watson-developer-cloud/swift-sdk/compare/2.2.0...2.3.0) (2019-08-23)
+
+### Features
+
+* CompareComplyV1: Add new contract entities
+
+### Bug Fixes
+
+* CompareComplyV1: Fix inconsistencies with Swift models and the API response
+
+## 2.2.0 (https://github.com/watson-developer-cloud/swift-sdk/compare/2.1.1...2.2.0) (2019-07-31)
+
+### Features
+
+* AssistantV1: add models for Assistant Search Skill
+
+## 2.1.1 (https://github.com/watson-developer-cloud/swift-sdk/compare/2.1.0...2.1.1) (2019-06-28)
+
+### Bug Fixes
+
+* SpeechToTextV1: Add configureSession parameter to RecognizeMicrophone. (87f5aed (https://github.com/watson-developer-cloud/swift-sdk/commit/87f5aed))
+
+# 2.1.0 (https://github.com/watson-developer-cloud/swift-sdk/compare/2.0.3...2.1.0) (2019-06-08)
+
+### Features
+
+* Add support for insecure connections (975bb68 (https://github.com/watson-developer-cloud/swift-sdk/commit/975bb68))
+* Assistant V1 updated DialogNodeOutputOptionsElementValue PR
+* LTv3 Document Translator API
+* NLU categories explanations
+* STT processing metrics and audio metrics features
+
+### Bug Fixes
+
+* Remove support for insecure connections for Linux (76f15f2 (https://github.com/watson-developer-cloud/swift-sdk/commit/76f15f2))
+
+## 2.0.3 (https://github.com/watson-developer-cloud/swift-sdk/compare/2.0.3...2.0.3) (2019-04-15)
+
+### Bug Fixes
+
+* **All:**
+  * Use bootstrap instead of update in carthage
+  * Use full url in semantic release
+  * Refactor bluemix to cloud.ibm
+  * Add Featured Projects section to README
+
+## 2.0.2 (https://github.com/watson-developer-cloud/swift-sdk/compare/2.0.1...2.0.2) (2019-04-15)
+
+### Bug Fixes
+
+* core: Look for iam_apikey in credential file with IAM auth (689d748 (https://github.com/watson-developer-cloud/swift-sdk/commit/689d748))
+* Fix swiftlint errors (9b12dba (https://github.com/watson-developer-cloud/swift-sdk/commit/9b12dba))
+
+# [2.0.1](https://github.com/watson-developer-cloud/swift-sdk/compare/2.0.0...2.0.1) (2019-04-07)
+
+
+### Bug Fixes
+* **VisualRecognitionV3:**
+  * Add .zip to filenames passed to create/update classifier
+  * Fix multiple calls to completionHandler from classifyWithLocalModel.
+
+
+# [2.0.0](https://github.com/watson-developer-cloud/swift-sdk/compare/1.4.0...2.0.0) (2019-03-28)
+
+
+### Features
+
+* **All:**
+  * Version moved to first parameter of init methods for basic authentication
+  * Credentials file support in the intializer dropped for iOS. Only supported in Linux
+  * Error response handling reworked for consistency across services and languages
+  * Ordering of parameters in some methods has changed due to migration of the API docs and generator to OpenAPI 3.0
+  * File-type parameters are now defined as `Data` rather than `URL`
+* **AssistantV1:**
+  * Some model classes have been merged / simplified
+  * The `InputData` class has been renamed to `MessageInput`
+* **SpeechToTextV1:**
+  * The `recognizeWithWebsockets` method has been revised to accept a `RecognizeCallback` object with `onResults` and `onError` callback properties
+
+
+# [1.4.0](https://github.com/watson-developer-cloud/swift-sdk/compare/1.3.1...1.4.0) (2019-02-12)
+
+
+### Bug Fixes
+
+* **AssistantV1:** Remove erroneous `additionalProperties` from MessageResponse ([60f1616](https://github.com/watson-developer-cloud/swift-sdk/commit/60f1616))
+* **CompareComplyV1:** BodyCells had incorrect types for some of its properties ([13c66af](https://github.com/watson-developer-cloud/swift-sdk/commit/13c66af))
+
+
+### Features
+
+* **All:** New initializer that loads credentials from file ([39ddae3](https://github.com/watson-developer-cloud/swift-sdk/commit/39ddae3))
+* **AssistantV1:** Add `additionalProperties` property to InputData ([1e14888](https://github.com/watson-developer-cloud/swift-sdk/commit/1e14888))
+* **CompareComplyV1:** Add `address` as a possible Attribute ([b34a782](https://github.com/watson-developer-cloud/swift-sdk/commit/b34a782))
+* **CompareComplyV1:** Add `attributes` property to BodyCells ([3302504](https://github.com/watson-developer-cloud/swift-sdk/commit/3302504))
+* **CompareComplyV1:** Add `importance` to Parties ([96eb790](https://github.com/watson-developer-cloud/swift-sdk/commit/96eb790))
+* **CompareComplyV1:** Add confidence level for the identification of the contract amount ([35a773a](https://github.com/watson-developer-cloud/swift-sdk/commit/35a773a))
+* **DiscoveryV1:** Add method to get the stopword list status ([4a6b615](https://github.com/watson-developer-cloud/swift-sdk/commit/4a6b615))
+* **DiscoveryV1:** Add the `pending` status for Documents ([f342c68](https://github.com/watson-developer-cloud/swift-sdk/commit/f342c68))
+* **SpeechToTextV1:** Add new parameter `force` to upgradeAcousticModel() method ([eecf18b](https://github.com/watson-developer-cloud/swift-sdk/commit/eecf18b))
+
+## [1.3.1](https://github.com/watson-developer-cloud/swift-sdk/compare/1.3.0...1.3.1) (2019-01-18)
+
+
+### Bug Fixes
+
+* **SpeechToTextV1:** Fix grammarName and redaction parameters in recognize websocket methods ([64b116c](https://github.com/watson-developer-cloud/swift-sdk/commit/64b116c))
+
+# [1.3.0](https://github.com/watson-developer-cloud/swift-sdk/compare/1.2.0...1.3.0) (2019-01-18)
+
+
+### Bug Fixes
+
+* **SpeechToTextV1:** Change contentType parameter to optional in certain methods ([e033cff](https://github.com/watson-developer-cloud/swift-sdk/commit/e033cff))
+
+
+### Features
+
+* **DiscoveryV1:** Add support for custom stopword lists ([915ce68](https://github.com/watson-developer-cloud/swift-sdk/commit/915ce68))
+* **DiscoveryV1:** Add support for gateways ([39393fa](https://github.com/watson-developer-cloud/swift-sdk/commit/39393fa))
+* **DiscoveryV1:** Add web crawlers to the list of possible sources ([5a4a62e](https://github.com/watson-developer-cloud/swift-sdk/commit/5a4a62e))
+* **SpeechToTextV1:** Add new options to acoustic models and language models ([3345b46](https://github.com/watson-developer-cloud/swift-sdk/commit/3345b46))
+* **SpeechToTextV1:** Add the ability to specify grammars in recognition requests ([7edcdf4](https://github.com/watson-developer-cloud/swift-sdk/commit/7edcdf4))
+* **VisualRecognitionV3:** Add acceptLanguage parameter to detectFaces() ([a260a9c](https://github.com/watson-developer-cloud/swift-sdk/commit/a260a9c))
+* **VisualRecognitionV3:** Add genderLabel property to FaceGender model ([a00f3c6](https://github.com/watson-developer-cloud/swift-sdk/commit/a00f3c6))
+
+# [1.2.0](https://github.com/watson-developer-cloud/swift-sdk/compare/1.1.1...1.2.0) (2019-01-11)
+
+
+### Bug Fixes
+
+* **CompareComplyV1:** Change Location properties to optional ([2e66ac5](https://github.com/watson-developer-cloud/swift-sdk/commit/2e66ac5))
+* **CompareComplyV1:** Fix incorrect parameter types ([4cfa292](https://github.com/watson-developer-cloud/swift-sdk/commit/4cfa292))
+* **CompareComplyV1:** Give more appropriate types to model properties ([4b1af08](https://github.com/watson-developer-cloud/swift-sdk/commit/4b1af08))
+
+
+### Features
+
+* **CompareComplyV1:** Add properties to AlignedElements and Attribute ([0fbeb6d](https://github.com/watson-developer-cloud/swift-sdk/commit/0fbeb6d))
+* **CompareComplyV1:** New framework for Compare & Comply service ([482444a](https://github.com/watson-developer-cloud/swift-sdk/commit/482444a))
+
+# [1.1.1](https://github.com/watson-developer-cloud/swift-sdk/compare/1.1.0...1.1.1) (2019-01-10)
+
+
+### Bug Fixes
+
+* **AssistantV1:** Add missing "disabled" field to DialogNode ([e45de83](https://github.com/watson-developer-cloud/swift-sdk/commit/e45de83))
+* **AssistantV2:** Add missing userDefined field to MessageOutput ([f65cafc](https://github.com/watson-developer-cloud/swift-sdk/commit/f65cafc))
+
+# [1.1.0](https://github.com/watson-developer-cloud/swift-sdk/compare/1.0.0...1.1.0) (2018-12-11)
+
+
+### Features
+
+* **AssistantV1:** Add metadata field to Context model ([13a90c1](https://github.com/watson-developer-cloud/swift-sdk/commit/13a90c1))
+* **AssistantV1:** Add option to sort results in getWorkspace() ([5cefc7b](https://github.com/watson-developer-cloud/swift-sdk/commit/5cefc7b))
+* **DiscoveryV1:** Add new concepts property to NluEnrichmentFeatures model ([80258db](https://github.com/watson-developer-cloud/swift-sdk/commit/80258db))
+* **DiscoveryV1:** Add retrievalDetails property to QueryResponse model ([631affc](https://github.com/watson-developer-cloud/swift-sdk/commit/631affc))
+* **NaturalLanguageUnderstandingV1:** Add 4 new properties to the Model model ([53fe057](https://github.com/watson-developer-cloud/swift-sdk/commit/53fe057))
+* **NaturalLanguageUnderstandingV1:** Add new count property to KeywordsResult model ([ab9a339](https://github.com/watson-developer-cloud/swift-sdk/commit/ab9a339))
+* **NaturalLanguageUnderstandingV1:** Add new limit property to CategoriesOptions model ([5bf6637](https://github.com/watson-developer-cloud/swift-sdk/commit/5bf6637))
+
+# [1.0.0](https://github.com/watson-developer-cloud/swift-sdk/compare/0.38.1...1.0.0) (2018-12-06)
+
+
+### All Services
+- `failure` and `success` callbacks are replaced with a single `completionHandler` of type `(WatsonResponse<T>?, WatsonError?) -> Void`
+- New `WatsonResponse` type in the completion handlers that contains the response HTTP status, headers, and data
+- New `WatsonError` type in the completion handlers that contains more useful and detailed information about the error that occurred
+- Change the type of date-time properties from `String` to `Date`
+- Remove all deprecated types, methods, and properties
+- All parameters now get passed directly to methods rather than packaging them up in the `properties` parameter
+- All models are now `Codable`, instead of only being `Encodable` or `Decodable`, so they can be converted both to and from JSON
+- All models are now `Equatable`
+
+
+### ConversationV1
+- REMOVED - use AssistantV1 instead
+
+
+### LanguageTranslatorV2
+- REMOVED - use LanguageTranslatorV3 instead
+
+
+### NaturalLanguageUnderstandingV1
+- Remove `additionalProperties` property from `CategoriesOptions` and `MetadataOptions`
+
+
+### SpeechToTextV1
+- The `websocketsURL` property is no longer public. Setting the `serviceURL` will automatically update the property.
+- Add missing parameters `baseModelVersion`, `languageCustomizationID`, and `customerID` to the following methods:
+    - `recognize()` (using an audio file)
+    - `recognizeUsingWebsocket()`
+    - `recognizeMicrophone()`
+    - `SpeechToTextSession()` initializers
+
+
+### VisualRecognitionV3
+- Remove `PositiveExample` model. All parameters that used that model are now of type `[String: URL]`
+- Change the following properties from optional to nonoptional
+    - `ClassResult.score`
+    - `DetectedFaces.imagesProcessed`
+    - `FaceAge.score`
+    - `FaceGender.score`
+
+
+## [0.38.1](https://github.com/watson-developer-cloud/swift-sdk/compare/0.38.0...0.38.1) (2018-11-13)
+
+
+### Bug Fixes
+
+* **SpeechToTextV1:** Update recognizeMicrophone() to work with any authentication method ([5701ba6](https://github.com/watson-developer-cloud/swift-sdk/commit/5701ba6))
+
+# [0.38.0](https://github.com/watson-developer-cloud/swift-sdk/compare/0.37.0...0.38.0) (2018-11-12)
+
+
+### Bug Fixes
+
+* **VisualRecognitionV3:** temporary workaround for new A12 based devices ([62edd09](https://github.com/watson-developer-cloud/swift-sdk/commit/62edd09))
+* **VisualRecognitionV3:** temporary workaround to support A12 devices for Core ML inference ([fa212ec](https://github.com/watson-developer-cloud/swift-sdk/commit/fa212ec))
+
+
+### Features
+
+* **All:** Add support for Swift 4.2 ([4bbf42b](https://github.com/watson-developer-cloud/swift-sdk/commit/4bbf42b))
+
+# [0.37.0](https://github.com/watson-developer-cloud/swift-sdk/compare/0.36.0...0.37.0) (2018-11-02)
+
+
+### Features
+
+* **AssistantV1, AssistantV2:** Add cloudFunction and webAction to DialogNodeAction.ActionType ([16d3fc9](https://github.com/watson-developer-cloud/swift-sdk/commit/16d3fc9))
+* **DiscoveryV1:** Tokenization dictionaries for collections ([d274371](https://github.com/watson-developer-cloud/swift-sdk/commit/d274371))
+* **SpeechToTextV1:** Add languageCustomizationID parameter to createJob() and recognize() ([0137964](https://github.com/watson-developer-cloud/swift-sdk/commit/0137964))
+
+# [0.36.0](https://github.com/watson-developer-cloud/swift-sdk/compare/0.35.0...0.36.0) (2018-10-19)
+
+
+### Bug Fixes
+
+* **Visual Recognition:** Fix deserialization error in getCoreMlModel ([9392b23](https://github.com/watson-developer-cloud/swift-sdk/commit/9392b23))
+* Conversion of file data to multipart form data ([1d46baf](https://github.com/watson-developer-cloud/swift-sdk/commit/1d46baf))
+
+
+### Features
+
+* **Discovery:** Add "LT" option to environment sizes ([f92fcde](https://github.com/watson-developer-cloud/swift-sdk/commit/f92fcde))
+* **Discovery:** Add `size` parameter to updateEnvironment method ([725e1d5](https://github.com/watson-developer-cloud/swift-sdk/commit/725e1d5))
+* **Discovery:** Add bias and loggingOptOut parameters to query methods ([8782fc6](https://github.com/watson-developer-cloud/swift-sdk/commit/8782fc6))
+* **Discovery:** Add requestedSize and searchStatus properties to Environment model ([14cdb02](https://github.com/watson-developer-cloud/swift-sdk/commit/14cdb02))
+* **ToneAnalyzer:** Add `ToneID` options to `ToneChatScore` ([ac75c92](https://github.com/watson-developer-cloud/swift-sdk/commit/ac75c92))
+
+
+### Reverts
+
+* **AssistantV1:** Revert erroneous addition of `actions` property to `OutputData` ([28efe1e](https://github.com/watson-developer-cloud/swift-sdk/commit/28efe1e))
+* **Linux:** Remove 30 minute wait from Linux tests ([1b4d734](https://github.com/watson-developer-cloud/swift-sdk/commit/1b4d734))
+
 Change Log
 ==========
 
@@ -271,7 +1157,7 @@ _2017-03-2_
 This update includes:
 
 - Updates for Natural Language Understanding service.
-- Bug fixes for memory leak in text to speech. 
+- Bug fixes for memory leak in text to speech.
 
 ## Version 0.14.0
 _2017-02-10_
@@ -512,7 +1398,7 @@ The iOS-sdk version 0.3.0 has many major changes with this new release.  The tea
 **Major updates**
 
 * Added IBM Watson Tone Analyzer
-* Added IBM Watson Visual Recognition 
+* Added IBM Watson Visual Recognition
 * Updated all of the code to use the new Rest-kit and removed NetworkUtils and WatsonGateway.  We still have one service to convert, Alchemy Language, but we anticipate that change coming in the next minor release.
 * Removed many dependencies and reducing the total number to three.  Alamofire, Freddy, and Starscream.
 * You will notice an update to the targets available and now the developer can pick and choose the services to include.

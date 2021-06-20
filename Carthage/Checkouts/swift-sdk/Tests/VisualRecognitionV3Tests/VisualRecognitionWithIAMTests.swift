@@ -1,10 +1,18 @@
-//
-//  VisualRecognitionWithIAMTests.swift
-//  AssistantV1Tests
-//
-//  Created by Mike Kistler on 5/24/18.
-//  Copyright © 2018 IBM Corporation. All rights reserved.
-//
+/**
+ * (C) Copyright IBM Corp. 2018, 2019.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ **/
 
 import XCTest
 import Foundation
@@ -17,7 +25,6 @@ class VisualRecognitionWithIAMTests: XCTestCase {
     static var allTests: [(String, (VisualRecognitionWithIAMTests) -> () throws -> Void)] {
         return [
             ("testAccessWithAPIKey", testAccessWithAPIKey),
-            ("testAccessWithAccessToken", testAccessWithAccessToken),
         ]
     }
 
@@ -28,15 +35,10 @@ class VisualRecognitionWithIAMTests: XCTestCase {
     private let trumpURL = "https://watson-developer-cloud.github.io/doc-tutorial-downloads/" +
         "visual-recognition/prez-trump.jpg"
 
-    /** Fail false negatives. */
-    func failWithError(error: Error) {
-        XCTFail("Positive test failed with error: \(error)")
-    }
-
     /** Get access token using IAM API Key. */
     func getTokenInfo(apiKey: String, refreshToken: String? = nil) -> [String: Any]? {
         // swiftlint:disable force_unwrapping
-        let url = URL(string: "https://iam.ng.bluemix.net/identity/token")!
+        let url = URL(string: "https://iam.cloud.ibm.com/identity/token")!
         let auth = "bx:bx".data(using: String.Encoding.utf8)!.base64EncodedString()
         // swiftlint:enable force_unwrapping
         var request = URLRequest(url: url)
@@ -77,18 +79,23 @@ class VisualRecognitionWithIAMTests: XCTestCase {
 
     /** Access service using IAM API Key credentials  */
     func testAccessWithAPIKey() {
-        guard let apiKey = WatsonCredentials.VisualRecognitionAPIKey else {
-            return
-        }
-        let version = "2018-09-14"
-        let visualRecognition = VisualRecognition(version: version, apiKey: apiKey)
+        let authenticator = WatsonIAMAuthenticator.init(apiKey: WatsonCredentials.VisualRecognitionV3APIKey)
+        let visualRecognition = VisualRecognition(version: versionDate, authenticator: authenticator)
         visualRecognition.defaultHeaders["X-Watson-Learning-Opt-Out"] = "true"
         visualRecognition.defaultHeaders["X-Watson-Test"] = "true"
 
         let expectation = self.expectation(description: "Access service using IAM API Key WatsonCredentials.")
 
-        visualRecognition.classify(url: ginniURL, failure: failWithError) {
-            classifiedImages in
+        visualRecognition.classify(url: ginniURL, acceptLanguage: "en") {
+            response, error in
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+                return
+            }
+            guard let classifiedImages = response?.result else {
+                XCTFail(missingResultMessage)
+                return
+            }
 
             // verify classified images object
             XCTAssertNil(classifiedImages.warnings)
@@ -96,8 +103,8 @@ class VisualRecognitionWithIAMTests: XCTestCase {
 
             // verify the image's metadata
             let image = classifiedImages.images.first
-            XCTAssertEqual(image?.sourceUrl, self.ginniURL)
-            XCTAssertEqual(image?.resolvedUrl, self.ginniURL)
+            XCTAssertEqual(image?.sourceURL, self.ginniURL)
+            XCTAssertEqual(image?.resolvedURL, self.ginniURL)
             XCTAssertNil(image?.image)
             XCTAssertNil(image?.error)
             XCTAssertEqual(image?.classifiers.count, 1)
@@ -110,94 +117,5 @@ class VisualRecognitionWithIAMTests: XCTestCase {
             expectation.fulfill()
         }
         waitForExpectations(timeout: timeout)
-    }
-
-    /** Access service using access token obtained using IAM API Key.  */
-    func testAccessWithAccessToken() {
-        guard let apiKey = WatsonCredentials.VisualRecognitionAPIKey else {
-            return
-        }
-
-        // Obtain an access token using the IAM API Key
-
-        var tokenInfo = getTokenInfo(apiKey: apiKey)
-        guard let accessToken = tokenInfo?["access_token"] as? String else {
-            XCTFail("Failed to obtain access token")
-            return
-        }
-
-        // Pass the access token as the credentials when instantiating the service
-
-        let version = "2018-09-14"
-        let visualRecognition = VisualRecognition(version: version, accessToken: accessToken)
-        visualRecognition.defaultHeaders["X-Watson-Learning-Opt-Out"] = "true"
-        visualRecognition.defaultHeaders["X-Watson-Test"] = "true"
-
-        // Verify access to the service using the access token
-
-        let expectation = self.expectation(description: "Access VR service with access token")
-        visualRecognition.classify(url: obamaURL, failure: failWithError) {
-            classifiedImages in
-
-            // verify classified images object
-            XCTAssertNil(classifiedImages.warnings)
-            XCTAssertEqual(classifiedImages.images.count, 1)
-
-            // verify the image's metadata
-            let image = classifiedImages.images.first
-            XCTAssertEqual(image?.sourceUrl, self.obamaURL)
-            XCTAssertEqual(image?.resolvedUrl, self.obamaURL)
-            XCTAssertNil(image?.image)
-            XCTAssertNil(image?.error)
-            XCTAssertEqual(image?.classifiers.count, 1)
-
-            // verify the image's classifier
-            let classifier = image?.classifiers.first
-            XCTAssertEqual(classifier?.classifierID, "default")
-            XCTAssertEqual(classifier?.name, "default")
-
-            expectation.fulfill()
-        }
-        waitForExpectations(timeout: timeout)
-
-        // Obtain a new access token using the refresh token returned with the first access token
-
-        tokenInfo = getTokenInfo(apiKey: apiKey, refreshToken: tokenInfo?["refresh_token"] as? String ?? "bogus")
-        guard let newToken = tokenInfo?["access_token"] as? String else {
-            XCTFail("Failed to obtain access token")
-            return
-        }
-
-        // Update the access token to be used for requests by the service
-
-        visualRecognition.accessToken(newToken)
-
-        // Verify access to the service using the refreshed access token
-
-        let expectation2 = self.expectation(description: "Access VR service with refreshed access token")
-        visualRecognition.classify(url: trumpURL, failure: failWithError) {
-            classifiedImages in
-
-            // verify classified images object
-            XCTAssertNil(classifiedImages.warnings)
-            XCTAssertEqual(classifiedImages.images.count, 1)
-
-            // verify the image's metadata
-            let image = classifiedImages.images.first
-            XCTAssertEqual(image?.sourceUrl, self.trumpURL)
-            XCTAssertEqual(image?.resolvedUrl, self.trumpURL)
-            XCTAssertNil(image?.image)
-            XCTAssertNil(image?.error)
-            XCTAssertEqual(image?.classifiers.count, 1)
-
-            // verify the image's classifier
-            let classifier = image?.classifiers.first
-            XCTAssertEqual(classifier?.classifierID, "default")
-            XCTAssertEqual(classifier?.name, "default")
-
-            expectation2.fulfill()
-        }
-        waitForExpectations(timeout: timeout)
-
     }
 }

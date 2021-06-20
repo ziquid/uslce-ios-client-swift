@@ -1,4 +1,4 @@
-Remember, an issue is not the place to ask questions. You can use [Stack Overflow](http://stackoverflow.com/questions/tagged/ibm-watson) for that, or you may want to start a discussion on the [dW Answers](https://developer.ibm.com/answers/questions/ask/?topics=watson).
+Remember, an issue is not the place to ask questions. If you have issues with the APIs or have a question about the Watson services, see [Stack Overflow](https://stackoverflow.com/questions/tagged/ibm-watson+swift).
 
 Before you open an issue, please check if a similar issue already exists or has been closed before.
 
@@ -9,8 +9,8 @@ Before you open an issue, please check if a similar issue already exists or has 
 - [ ] Expected behavior
 - [ ] Actual behavior
 - [ ] Xcode version
-- [ ] ios-sdk version
-- [ ] ios version you are targeting
+- [ ] swift-sdk version
+- [ ] iOS or Linux version you are targeting
 
 
 ### When you open an issue for a feature request, please add as much detail as possible:

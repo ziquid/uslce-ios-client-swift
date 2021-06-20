@@ -1,0 +1,18 @@
+{
+  "branch": "master",
+  "verifyConditions": [],
+  "tagFormat": "v${version}",
+  "prepare": [
+    "@semantic-release/git",
+    {
+      "path": "@semantic-release/exec",
+      "cmd": "bumpversion --new-version ${nextRelease.version} --verbose patch"
+    }
+  ],
+  "publish": [
+    {
+      "path": "@semantic-release/github",
+      "assets": []
+    }
+  ]
+}

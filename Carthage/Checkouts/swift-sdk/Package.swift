@@ -1,7 +1,6 @@
-// swift-tools-version:4.0
-
+// swift-tools-version:5.3
 /**
- * Copyright IBM Corporation 2016
+ * (C) Copyright IBM Corp. 2016, 2019.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,46 +23,66 @@
 // tool (e.g. Carthage). If you would like support for the Swift Package Manager,
 // feel free to open an issue or even contribute a pull request that adds
 // support for the required libraries.
-
 import PackageDescription
 
 let package = Package(
     name: "WatsonDeveloperCloud",
+    platforms: [
+        .iOS(.v10), .macOS(.v10_15),
+    ],
     products: [
         .library(name: "AssistantV1", targets: ["AssistantV1"]),
         .library(name: "AssistantV2", targets: ["AssistantV2"]),
-        .library(name: "ConversationV1", targets: ["ConversationV1"]),
+        .library(name: "CompareComplyV1", targets: ["CompareComplyV1"]),
         .library(name: "DiscoveryV1", targets: ["DiscoveryV1"]),
+        .library(name: "DiscoveryV2", targets: ["DiscoveryV2"]),
         .library(name: "LanguageTranslatorV3", targets: ["LanguageTranslatorV3"]),
         .library(name: "NaturalLanguageClassifierV1", targets: ["NaturalLanguageClassifierV1"]),
         .library(name: "NaturalLanguageUnderstandingV1", targets: ["NaturalLanguageUnderstandingV1"]),
         .library(name: "PersonalityInsightsV3", targets: ["PersonalityInsightsV3"]),
+        .library(name: "SpeechToTextV1", targets: ["SpeechToTextV1"]),
+        .library(name: "TextToSpeechV1", targets: ["TextToSpeechV1"]),
         .library(name: "ToneAnalyzerV3", targets: ["ToneAnalyzerV3"]),
         .library(name: "VisualRecognitionV3", targets: ["VisualRecognitionV3"]),
+        .library(name: "VisualRecognitionV4", targets: ["VisualRecognitionV4"]),
+        
     ],
     dependencies: [
-        .package(url: "https://github.com/watson-developer-cloud/restkit.git", from: "1.2.0")
+        .package(name: "IBMSwiftSDKCore", url: "https://github.com/IBM/swift-sdk-core", from: "1.0.0"),
+        .package(name: "Starscream", url: "https://github.com/daltoniam/Starscream", from: "4.0.0"),
     ],
     targets: [
-        .target(name: "AssistantV1", dependencies: ["RestKit"]),
+        .systemLibrary(name: "Clibogg", path: "Sources/SupportingFiles/Dependencies/Clibogg", pkgConfig: "ogg", providers: [.brew(["libogg"])]),
+        .systemLibrary(name: "Clibopus", path: "Sources/SupportingFiles/Dependencies/Clibopus", pkgConfig: "opus", providers: [.brew(["opus"])]),
+        .target(name: "Copustools", path: "Sources/SupportingFiles/Dependencies/Copustools"),
+        .target(name: "AssistantV1", dependencies: ["IBMSwiftSDKCore"], path: "Sources/AssistantV1"),
+        .target(name: "AssistantV2", dependencies: ["IBMSwiftSDKCore"], path: "Sources/AssistantV2"),
+        .target(name: "CompareComplyV1", dependencies: ["IBMSwiftSDKCore"], path: "Sources/CompareComplyV1"),
+        .target(name: "DiscoveryV1", dependencies: ["IBMSwiftSDKCore"], path: "Sources/DiscoveryV1"),
+        .target(name: "DiscoveryV2", dependencies: ["IBMSwiftSDKCore"], path: "Sources/DiscoveryV2"),
+        .target(name: "LanguageTranslatorV3", dependencies: ["IBMSwiftSDKCore"], path: "Sources/LanguageTranslatorV3"),
+        .target(name: "NaturalLanguageClassifierV1", dependencies: ["IBMSwiftSDKCore"], path: "Sources/NaturalLanguageClassifierV1"),
+        .target(name: "NaturalLanguageUnderstandingV1", dependencies: ["IBMSwiftSDKCore"], path: "Sources/NaturalLanguageUnderstandingV1"),
+        .target(name: "PersonalityInsightsV3", dependencies: ["IBMSwiftSDKCore"], path: "Sources/PersonalityInsightsV3"),
+        .target(name: "SpeechToTextV1", dependencies: ["IBMSwiftSDKCore", "Starscream", "Clibogg", "Clibopus"], path: "Sources/SpeechToTextV1"),
+        .target(name: "TextToSpeechV1", dependencies: ["IBMSwiftSDKCore", "Clibogg", "Clibopus", "Copustools"], path: "Sources/TextToSpeechV1"),
+        .target(name: "ToneAnalyzerV3", dependencies: ["IBMSwiftSDKCore"], path: "Sources/ToneAnalyzerV3"),
+        .target(name: "VisualRecognitionV3", dependencies: ["IBMSwiftSDKCore"], path: "Sources/VisualRecognitionV3"),
+        .target(name: "VisualRecognitionV4", dependencies: ["IBMSwiftSDKCore"], path: "Sources/VisualRecognitionV4"),
         .testTarget(name: "AssistantV1Tests", dependencies: ["AssistantV1"]),
-        .target(name: "AssistantV2", dependencies: ["RestKit"]),
         .testTarget(name: "AssistantV2Tests", dependencies: ["AssistantV2"]),
-        .target(name: "ConversationV1", dependencies: ["RestKit"]),
-        .testTarget(name: "ConversationV1Tests", dependencies: ["ConversationV1"]),
-        .target(name: "DiscoveryV1", dependencies: ["RestKit"]),
+        .testTarget(name: "CompareComplyV1Tests", dependencies: ["CompareComplyV1"]),
         .testTarget(name: "DiscoveryV1Tests", dependencies: ["DiscoveryV1"]),
-        .target(name: "LanguageTranslatorV3", dependencies: ["RestKit"]),
+        .testTarget(name: "DiscoveryV2Tests", dependencies: ["DiscoveryV2"]),
         .testTarget(name: "LanguageTranslatorV3Tests", dependencies: ["LanguageTranslatorV3"]),
-        .target(name: "NaturalLanguageClassifierV1", dependencies: ["RestKit"]),
         .testTarget(name: "NaturalLanguageClassifierV1Tests", dependencies: ["NaturalLanguageClassifierV1"]),
-        .target(name: "NaturalLanguageUnderstandingV1", dependencies: ["RestKit"]),
         .testTarget(name: "NaturalLanguageUnderstandingV1Tests", dependencies: ["NaturalLanguageUnderstandingV1"]),
-        .target(name: "PersonalityInsightsV3", dependencies: ["RestKit"]),
         .testTarget(name: "PersonalityInsightsV3Tests", dependencies: ["PersonalityInsightsV3"]),
-        .target(name: "ToneAnalyzerV3", dependencies: ["RestKit"]),
+        .testTarget(name: "SpeechToTextV1Tests", dependencies: ["SpeechToTextV1"]),
+        .testTarget(name: "TextToSpeechV1Tests", dependencies: ["TextToSpeechV1"]),
         .testTarget(name: "ToneAnalyzerV3Tests", dependencies: ["ToneAnalyzerV3"]),
-        .target(name: "VisualRecognitionV3", dependencies: ["RestKit"]),
         .testTarget(name: "VisualRecognitionV3Tests", dependencies: ["VisualRecognitionV3"]),
+        .testTarget(name: "VisualRecognitionV4Tests", dependencies: ["VisualRecognitionV4"]),
+        
     ]
 )

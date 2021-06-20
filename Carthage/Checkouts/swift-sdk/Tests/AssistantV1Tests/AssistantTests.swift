@@ -1,5 +1,5 @@
 /**
- * Copyright IBM Corporation 2016, 2017
+ * (C) Copyright IBM Corp. 2016, 2020.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,8 @@
 
 import XCTest
 import Foundation
+// Do not import @testable to ensure only public interface is exposed
 import AssistantV1
-import RestKit
 
 class AssistantTests: XCTestCase {
 
@@ -36,75 +36,78 @@ class AssistantTests: XCTestCase {
     }
 
     static var allTests: [(String, (AssistantTests) -> () throws -> Void)] {
-        return [
+        let tests: [(String, (AssistantTests) -> () throws -> Void)] = [
+            // Positive Tests
             ("testMessage", testMessage),
             ("testMessageAllFields1", testMessageAllFields1),
             ("testMessageAllFields2", testMessageAllFields2),
             ("testMessageContextVariable", testMessageContextVariable),
+            // Workspaces
             ("testListAllWorkspaces", testListAllWorkspaces),
             ("testListAllWorkspacesWithPageLimit1", testListAllWorkspacesWithPageLimit1),
-            ("testListAllWorkspacesWithIncludeCount", testListAllWorkspacesWithIncludeCount),
             ("testCreateAndDeleteWorkspace", testCreateAndDeleteWorkspace),
             ("testListSingleWorkspace", testListSingleWorkspace),
             ("testCreateUpdateAndDeleteWorkspace", testCreateUpdateAndDeleteWorkspace),
+            // Intents
             ("testListAllIntents", testListAllIntents),
-            ("testListAllIntentsWithIncludeCount", testListAllIntentsWithIncludeCount),
             ("testListAllIntentsWithPageLimit1", testListAllIntentsWithPageLimit1),
             ("testListAllIntentsWithExport", testListAllIntentsWithExport),
             ("testCreateAndDeleteIntent", testCreateAndDeleteIntent),
             ("testGetIntentWithExport", testGetIntentWithExport),
             ("testCreateUpdateAndDeleteIntent", testCreateUpdateAndDeleteIntent),
+            // Examples
             ("testListAllExamples", testListAllExamples),
-            ("testListAllExamplesWithIncludeCount", testListAllExamplesWithIncludeCount),
             ("testListAllExamplesWithPageLimit1", testListAllExamplesWithPageLimit1),
             ("testCreateAndDeleteExample", testCreateAndDeleteExample),
             ("testGetExample", testGetExample),
             ("testCreateUpdateAndDeleteExample", testCreateUpdateAndDeleteExample),
+            // Counterexamples
             ("testListAllCounterexamples", testListAllCounterexamples),
-            ("testListAllCounterexamplesWithIncludeCount", testListAllCounterexamplesWithIncludeCount),
             ("testListAllCounterexamplesWithPageLimit1", testListAllCounterexamplesWithPageLimit1),
             ("testCreateAndDeleteCounterexample", testCreateAndDeleteCounterexample),
             ("testGetCounterexample", testGetCounterexample),
             ("testCreateUpdateAndDeleteCounterexample", testCreateUpdateAndDeleteCounterexample),
+            // Entities
             ("testListAllEntities", testListAllEntities),
-            ("testListAllEntitiesWithIncludeCount", testListAllEntitiesWithIncludeCount),
             ("testListAllEntitiesWithPageLimit1", testListAllEntitiesWithPageLimit1),
             ("testListAllEntitiesWithExport", testListAllEntitiesWithExport),
             ("testCreateAndDeleteEntity", testCreateAndDeleteEntity),
             ("testCreateUpdateAndDeleteEntity", testCreateUpdateAndDeleteEntity),
             ("testGetEntity", testGetEntity),
+            // Mentions
             ("testListMentions", testListMentions),
+            // Values
             ("testListAllValues", testListAllValues),
             ("testCreateUpdateAndDeleteValue", testCreateUpdateAndDeleteValue),
             ("testGetValue", testGetValue),
+            // Synonyms
             ("testListAllSynonym", testListAllSynonym),
-            ("testListAllSynonymWithIncludeCount", testListAllSynonymWithIncludeCount),
             ("testListAllSynonymWithPageLimit1", testListAllSynonymWithPageLimit1),
             ("testCreateAndDeleteSynonym", testCreateAndDeleteSynonym),
             ("testGetSynonym", testGetSynonym),
             ("testCreateUpdateAndDeleteSynonym", testCreateUpdateAndDeleteSynonym),
+            // Dialog Nodes
             ("testListAllDialogNodes", testListAllDialogNodes),
             ("testCreateAndDeleteDialogNode", testCreateAndDeleteDialogNode),
             ("testCreateUpdateAndDeleteDialogNode", testCreateUpdateAndDeleteDialogNode),
             ("testGetDialogNode", testGetDialogNode),
+            // Logs
             // ("testListAllLogs", testListAllLogs), // temporarily disabled due to server-side bug
             // ("testListLogs", testListLogs), // temporarily disabled due to server-side bug
+            // Negative Tests
             ("testMessageUnknownWorkspace", testMessageUnknownWorkspace),
             ("testMessageInvalidWorkspaceID", testMessageInvalidWorkspaceID),
             ("testInvalidServiceURL", testInvalidServiceURL),
         ]
+        return tests
     }
 
     /** Instantiate Assistant. */
     func instantiateAssistant() {
-        let version = "2018-09-14"
-        if let apiKey = WatsonCredentials.AssistantAPIKey {
-            assistant = Assistant(version: version, apiKey: apiKey)
-        } else {
-            let username = WatsonCredentials.AssistantUsername
-            let password = WatsonCredentials.AssistantPassword
-            assistant = Assistant(username: username, password: password, version: version)
-        }
+
+        let authenticator = WatsonIAMAuthenticator.init(apiKey: WatsonCredentials.AssistantAPIKey)
+        assistant = Assistant(version: versionDate, authenticator: authenticator)
+
         if let url = WatsonCredentials.AssistantURL {
             assistant.serviceURL = url
         }
@@ -112,22 +115,6 @@ class AssistantTests: XCTestCase {
         assistant.defaultHeaders["X-Watson-Test"] = "true"
     }
 
-    /** Fail false negatives. */
-    func failWithError(error: Error) {
-        XCTFail("Positive test failed with error: \(error)")
-    }
-
-    /** Fail false positives. */
-    func failWithResult<T>(result: T) {
-        XCTFail("Negative test returned a result.")
-    }
-
-    /** Fail false positives. */
-    func failWithResult() {
-        XCTFail("Negative test returned a result.")
-    }
-
-    /** Wait for expectations. */
     func waitForExpectations(timeout: TimeInterval = 10.0) {
         waitForExpectations(timeout: timeout) { error in
             XCTAssertNil(error, "Timeout")
@@ -140,81 +127,40 @@ class AssistantTests: XCTestCase {
         let description1 = "Start a conversation."
         let expectation1 = self.expectation(description: description1)
 
-        let response1 = ["Hi. It looks like a nice drive today. What would you like me to do?  "]
+        let result1 = ["Hello, I’m a demo customer care virtual assistant to show you the basics.  I can help with directions to my store, hours of operation and booking an in-store appointment"]
 
-        var context: Context?
-        assistant.message(workspaceID: workspaceID, nodesVisitedDetails: true, failure: failWithError) {
-            response in
+        assistant.message(workspaceID: workspaceID, nodesVisitedDetails: true) {
+            response, error in
+
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+                return
+            }
+            guard let message = response?.result else {
+                XCTFail(missingResultMessage)
+                return
+            }
 
             // verify input
-            XCTAssertNil(response.input?.text)
+            XCTAssertNil(message.input.text)
 
             // verify context
-            XCTAssertNotNil(response.context.conversationID)
-            XCTAssertNotEqual(response.context.conversationID, "")
-            XCTAssertNotNil(response.context.system)
-            XCTAssertNotNil(response.context.system!.additionalProperties)
-            XCTAssertFalse(response.context.system!.additionalProperties.isEmpty)
+            XCTAssertNotNil(message.context.conversationID)
+            XCTAssertNotEqual(message.context.conversationID, "")
+            XCTAssertNotNil(message.context.system)
+            XCTAssertNotNil(message.context.additionalProperties)
+            XCTAssertFalse(message.context.additionalProperties.isEmpty)
 
             // verify entities
-            XCTAssertTrue(response.entities.isEmpty)
+            XCTAssertTrue(message.entities.isEmpty)
 
             // verify intents
-            XCTAssertTrue(response.intents.isEmpty)
+            XCTAssertTrue(message.intents.isEmpty)
 
             // verify output
-            XCTAssertTrue(response.output.logMessages.isEmpty)
-            XCTAssertEqual(response.output.text, response1)
-            XCTAssertNotNil(response.output.nodesVisited)
-            XCTAssertEqual(response.output.nodesVisited!.count, 1)
-            XCTAssertNotNil(response.output.nodesVisitedDetails)
-            XCTAssertNotNil(response.output.nodesVisitedDetails!.first)
-            XCTAssertNotNil(response.output.nodesVisitedDetails!.first!.dialogNode)
-
-            context = response.context
+            XCTAssertTrue(message.output.logMessages.isEmpty)
+            XCTAssertEqual(message.output.text, result1)
             expectation1.fulfill()
-        }
-        waitForExpectations()
-
-        let description2 = "Continue a conversation."
-        let expectation2 = self.expectation(description: description2)
-
-        let input = InputData(text: "Turn on the radio.")
-        let request = MessageRequest(input: input, context: context!)
-        let response2 = ["Sure thing! Which genre would you prefer? Jazz is my personal favorite."]
-
-        assistant.message(workspaceID: workspaceID, request: request, failure: failWithError) {
-            response in
-
-            // verify input
-            XCTAssertEqual(response.input?.text, input.text)
-
-            // verify context
-            XCTAssertEqual(response.context.conversationID, context!.conversationID)
-            XCTAssertNotNil(response.context.system)
-            XCTAssertNotNil(response.context.system!.additionalProperties)
-            XCTAssertFalse(response.context.system!.additionalProperties.isEmpty)
-
-            // verify entities
-            XCTAssertEqual(response.entities.count, 1)
-            XCTAssertEqual(response.entities[0].entity, "appliance")
-            XCTAssertEqual(response.entities[0].location[0], 12)
-            XCTAssertEqual(response.entities[0].location[1], 17)
-            XCTAssertEqual(response.entities[0].value, "music")
-
-            // verify intents
-            XCTAssertEqual(response.intents.count, 1)
-            XCTAssertEqual(response.intents[0].intent, "turn_on")
-            XCTAssert(response.intents[0].confidence >= 0.80)
-            XCTAssert(response.intents[0].confidence <= 1.00)
-
-            // verify output
-            XCTAssertTrue(response.output.logMessages.isEmpty)
-            XCTAssertEqual(response.output.text, response2)
-            XCTAssertNotNil(response.output.nodesVisited)
-            XCTAssertEqual(response.output.nodesVisited!.count, 3)
-
-            expectation2.fulfill()
         }
         waitForExpectations()
     }
@@ -228,12 +174,22 @@ class AssistantTests: XCTestCase {
         var intents: [RuntimeIntent]?
         var output: OutputData?
 
-        assistant.message(workspaceID: workspaceID, failure: failWithError) {
-            response in
-            context = response.context
-            entities = response.entities
-            intents = response.intents
-            output = response.output
+        assistant.message(workspaceID: workspaceID) {
+            response, error in
+
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+                return
+            }
+            guard let message = response?.result else {
+                XCTFail(missingResultMessage)
+                return
+            }
+
+            context = message.context
+            entities = message.entities
+            intents = message.intents
+            output = message.output
             expectation1.fulfill()
         }
         waitForExpectations()
@@ -241,35 +197,49 @@ class AssistantTests: XCTestCase {
         let description2 = "Continue a conversation."
         let expectation2 = expectation(description: description2)
 
-        let input2 = InputData(text: "Turn on the radio.")
-        let request2 = MessageRequest(input: input2, context: context, entities: entities, intents: intents, output: output)
-        assistant.message(workspaceID: workspaceID, request: request2, failure: failWithError) {
-            response in
+        let input2 = MessageInput(text: "Turn on the radio.")
+        assistant.message(
+            workspaceID: workspaceID,
+            input: input2,
+            intents: intents,
+            entities: entities,
+            context: context,
+            output: output) {
+                response, error in
 
-            // verify objects are non-nil
-            XCTAssertNotNil(entities)
-            XCTAssertNotNil(intents)
-            XCTAssertNotNil(output)
+                if let error = error {
+                    XCTFail(unexpectedErrorMessage(error))
+                    return
+                }
+                guard let message = response?.result else {
+                    XCTFail(missingResultMessage)
+                    return
+                }
 
-            // verify intents are equal
-            for index in 0..<response.intents.count {
-                let intent1 = intents![index]
-                let intent2 = response.intents[index]
-                XCTAssertEqual(intent1.intent, intent2.intent)
-                XCTAssertEqual(intent1.confidence, intent2.confidence, accuracy: 10E-5)
-            }
+                // verify objects are non-nil
+                XCTAssertNotNil(entities)
+                XCTAssertNotNil(intents)
+                XCTAssertNotNil(output)
 
-            // verify entities are equal
-            for index in 0..<response.entities.count {
-                let entity1 = entities![index]
-                let entity2 = response.entities[index]
-                XCTAssertEqual(entity1.entity, entity2.entity)
-                XCTAssertEqual(entity1.location[0], entity2.location[0])
-                XCTAssertEqual(entity1.location[1], entity2.location[1])
-                XCTAssertEqual(entity1.value, entity2.value)
-            }
+                // verify intents are equal
+                for index in 0..<message.intents.count {
+                    let intent1 = intents![index]
+                    let intent2 = message.intents[index]
+                    XCTAssertEqual(intent1.intent, intent2.intent)
+                    XCTAssertEqual(intent1.confidence, intent2.confidence, accuracy: 10E-5)
+                }
 
-            expectation2.fulfill()
+                // verify entities are equal
+                for index in 0..<message.entities.count {
+                    let entity1 = entities![index]
+                    let entity2 = message.entities[index]
+                    XCTAssertEqual(entity1.entity, entity2.entity)
+                    XCTAssertEqual(entity1.location[0], entity2.location[0])
+                    XCTAssertEqual(entity1.location[1], entity2.location[1])
+                    XCTAssertEqual(entity1.value, entity2.value)
+                }
+
+                expectation2.fulfill()
         }
         waitForExpectations()
     }
@@ -283,9 +253,19 @@ class AssistantTests: XCTestCase {
         var intents: [RuntimeIntent]?
         var output: OutputData?
 
-        assistant.message(workspaceID: workspaceID, failure: failWithError) {
-            response in
-            context = response.context
+        assistant.message(workspaceID: workspaceID) {
+            response, error in
+
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+                return
+            }
+            guard let message = response?.result else {
+                XCTFail(missingResultMessage)
+                return
+            }
+
+            context = message.context
             expectation1.fulfill()
         }
         waitForExpectations()
@@ -293,51 +273,129 @@ class AssistantTests: XCTestCase {
         let description2 = "Continue a conversation."
         let expectation2 = expectation(description: description2)
 
-        let input2 = InputData(text: "Turn on the radio.")
-        let request2 = MessageRequest(input: input2, context: context, entities: entities, intents: intents, output: output)
-        assistant.message(workspaceID: workspaceID, request: request2, failure: failWithError) {
-            response in
-            context = response.context
-            entities = response.entities
-            intents = response.intents
-            output = response.output
-            expectation2.fulfill()
+        let input2 = MessageInput(text: "Turn on the radio.")
+        assistant.message(
+            workspaceID: workspaceID,
+            input: input2,
+            intents: intents,
+            entities: entities,
+            context: context,
+            output: output) {
+                response, error in
+
+                if let error = error {
+                    XCTFail(unexpectedErrorMessage(error))
+                    return
+                }
+                guard let message = response?.result else {
+                    XCTFail(missingResultMessage)
+                    return
+                }
+
+                context = message.context
+                entities = message.entities
+                intents = message.intents
+                output = message.output
+                expectation2.fulfill()
         }
         waitForExpectations()
 
         let description3 = "Continue a conversation with non-empty intents and entities."
         let expectation3 = expectation(description: description3)
 
-        let input3 = InputData(text: "Rock music.")
-        let request3 = MessageRequest(input: input3, context: context, entities: entities, intents: intents, output: output)
-        assistant.message(workspaceID: workspaceID, request: request3, failure: failWithError) {
-            response in
+        let input3 = MessageInput(text: "Rock music.")
+        assistant.message(
+            workspaceID: workspaceID,
+            input: input3,
+            intents: intents,
+            entities: entities,
+            context: context,
+            output: output) {
+                response, error in
 
-            // verify objects are non-nil
-            XCTAssertNotNil(entities)
-            XCTAssertNotNil(intents)
-            XCTAssertNotNil(output)
+                if let error = error {
+                    XCTFail(unexpectedErrorMessage(error))
+                    return
+                }
+                guard let message = response?.result else {
+                    XCTFail(missingResultMessage)
+                    return
+                }
 
-            // verify intents are equal
-            for index in 0..<response.intents.count {
-                let intent1 = intents![index]
-                let intent2 = response.intents[index]
-                XCTAssertEqual(intent1.intent, intent2.intent)
-                XCTAssertEqual(intent1.confidence, intent2.confidence, accuracy: 10E-5)
-            }
+                // verify objects are non-nil
+                XCTAssertNotNil(entities)
+                XCTAssertNotNil(intents)
+                XCTAssertNotNil(output)
 
-            // verify entities are equal
-            for index in 0..<response.entities.count {
-                let entity1 = entities![index]
-                let entity2 = response.entities[index]
-                XCTAssertEqual(entity1.entity, entity2.entity)
-                XCTAssertEqual(entity1.location[0], entity2.location[0])
-                XCTAssertEqual(entity1.location[1], entity2.location[1])
-                XCTAssertEqual(entity1.value, entity2.value)
-            }
+                // verify intents are equal
+                for index in 0..<message.intents.count {
+                    let intent1 = intents![index]
+                    let intent2 = message.intents[index]
+                    XCTAssertEqual(intent1.intent, intent2.intent)
+                    XCTAssertEqual(intent1.confidence, intent2.confidence, accuracy: 10E-5)
+                }
 
-            expectation3.fulfill()
+                // verify entities are equal
+                for index in 0..<message.entities.count {
+                    let entity1 = entities![index]
+                    let entity2 = message.entities[index]
+                    XCTAssertEqual(entity1.entity, entity2.entity)
+                    XCTAssertEqual(entity1.location[0], entity2.location[0])
+                    XCTAssertEqual(entity1.location[1], entity2.location[1])
+                    XCTAssertEqual(entity1.value, entity2.value)
+                }
+
+                expectation3.fulfill()
         }
+        waitForExpectations()
+    }
+
+    func testMessageSystemEntity() {
+        var context: Context!
+
+        let message1Expectation = self.expectation(description: "message 1")
+        assistant.message(workspaceID: workspaceID) {
+            response, error in
+
+            if let error = error {
+                XCTFail(error.localizedDescription)
+                return
+            }
+
+            guard let result = response?.result else {
+                XCTFail("no response")
+                return
+            }
+
+            XCTAssertNotNil(result.context)
+            context = result.context
+
+            message1Expectation.fulfill()
+        }
+
+        waitForExpectations()
+
+        let message2Expectation = self.expectation(description: "message 2")
+        let input = MessageInput(text: "I was born on 7/26/1990")
+        assistant.message(workspaceID: workspaceID, input: input, context: context) {
+            response, error in
+
+            if let error = error {
+                XCTFail(error.localizedDescription)
+                return
+            }
+
+            guard let result = response?.result else {
+                XCTFail("no response")
+                return
+            }
+
+            XCTAssertNotNil(result.context)
+            context = result.context
+
+            message2Expectation.fulfill()
+        }
+
         waitForExpectations()
     }
 
@@ -346,9 +404,19 @@ class AssistantTests: XCTestCase {
         let expectation1 = expectation(description: description1)
 
         var context: Context?
-        assistant.message(workspaceID: workspaceID, failure: failWithError) {
-            response in
-            context = response.context
+        assistant.message(workspaceID: workspaceID) {
+            response, error in
+
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+                return
+            }
+            guard let message = response?.result else {
+                XCTFail(missingResultMessage)
+                return
+            }
+
+            context = message.context
             context?.additionalProperties["foo"] = .string("bar")
             expectation1.fulfill()
         }
@@ -357,21 +425,25 @@ class AssistantTests: XCTestCase {
         let description2 = "Continue a conversation."
         let expectation2 = expectation(description: description2)
 
-        let input2 = InputData(text: "Turn on the radio.")
-        let request2 = MessageRequest(input: input2, context: context)
-        assistant.message(workspaceID: workspaceID, request: request2, failure: failWithError) {
-            response in
-            let additionalProperties = response.context.additionalProperties
+        let input2 = MessageInput(text: "Turn on the radio.")
+        assistant.message(workspaceID: workspaceID, input: input2, context: context) {
+            response, error in
+
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+                return
+            }
+            guard let message = response?.result else {
+                XCTFail(missingResultMessage)
+                return
+            }
+
+            let additionalProperties = message.context.additionalProperties
             guard case let .string(bar) = additionalProperties["foo"]! else {
                 XCTFail("Additional property \"foo\" expected but not present.")
                 return
             }
-            guard case let .boolean(reprompt) = additionalProperties["reprompt"]! else {
-                XCTFail("Additional property \"reprompt\" expected but not present.")
-                return
-            }
             XCTAssertEqual(bar, "bar")
-            XCTAssertTrue(reprompt)
             expectation2.fulfill()
         }
         waitForExpectations()
@@ -383,15 +455,26 @@ class AssistantTests: XCTestCase {
         let description = "List all workspaces."
         let expectation = self.expectation(description: description)
 
-        assistant.listWorkspaces(includeAudit: true, failure: failWithError) { workspaceResponse in
-            for workspace in workspaceResponse.workspaces {
+        assistant.listWorkspaces(includeAudit: true) {
+            response, error in
+
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+                return
+            }
+            guard let workspaceResult = response?.result else {
+                XCTFail(missingResultMessage)
+                return
+            }
+
+            for workspace in workspaceResult.workspaces {
                 XCTAssertNotNil(workspace.name)
                 XCTAssertNotNil(workspace.created)
                 XCTAssertNotNil(workspace.updated)
                 XCTAssertNotNil(workspace.language)
                 XCTAssertNotNil(workspace.workspaceID)
             }
-            XCTAssertNotNil(workspaceResponse.pagination.refreshUrl)
+            XCTAssertNotNil(workspaceResult.pagination.refreshURL)
             expectation.fulfill()
         }
         waitForExpectations()
@@ -401,37 +484,27 @@ class AssistantTests: XCTestCase {
         let description = "List all workspaces with page limit specified as 1."
         let expectation = self.expectation(description: description)
 
-        assistant.listWorkspaces(pageLimit: 1, includeAudit: true, failure: failWithError) { workspaceResponse in
-            XCTAssertEqual(workspaceResponse.workspaces.count, 1)
-            for workspace in workspaceResponse.workspaces {
+        assistant.listWorkspaces(pageLimit: 1, includeAudit: true) {
+            response, error in
+
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+                return
+            }
+            guard let workspaceResult = response?.result else {
+                XCTFail(missingResultMessage)
+                return
+            }
+
+            XCTAssertEqual(workspaceResult.workspaces.count, 1)
+            for workspace in workspaceResult.workspaces {
                 XCTAssertNotNil(workspace.name)
                 XCTAssertNotNil(workspace.created)
                 XCTAssertNotNil(workspace.updated)
                 XCTAssertNotNil(workspace.language)
                 XCTAssertNotNil(workspace.workspaceID)
             }
-            XCTAssertNotNil(workspaceResponse.pagination.refreshUrl)
-            expectation.fulfill()
-        }
-        waitForExpectations()
-    }
-
-    func testListAllWorkspacesWithIncludeCount() {
-        let description = "List all workspaces with includeCount as true."
-        let expectation = self.expectation(description: description)
-
-        assistant.listWorkspaces(includeCount: true, includeAudit: true, failure: failWithError) { workspaceResponse in
-            for workspace in workspaceResponse.workspaces {
-                XCTAssertNotNil(workspace.name)
-                XCTAssertNotNil(workspace.created)
-                XCTAssertNotNil(workspace.updated)
-                XCTAssertNotNil(workspace.language)
-                XCTAssertNotNil(workspace.workspaceID)
-            }
-            XCTAssertNotNil(workspaceResponse.pagination.refreshUrl)
-            XCTAssertNotNil(workspaceResponse.pagination.total)
-            XCTAssertNotNil(workspaceResponse.pagination.matched)
-            XCTAssertGreaterThanOrEqual(workspaceResponse.pagination.total!, workspaceResponse.workspaces.count)
+            XCTAssertNotNil(workspaceResult.pagination.refreshURL)
             expectation.fulfill()
         }
         waitForExpectations()
@@ -446,25 +519,42 @@ class AssistantTests: XCTestCase {
         let workspaceName = "swift-sdk-test-workspace"
         let workspaceDescription = "temporary workspace for the swift sdk unit tests"
         let workspaceLanguage = "en"
-        let workspaceMetadata: [String: JSON] = ["testKey": .string("testValue")]
-        let intentExample = CreateExample(text: "This is an example of Intent1")
+        let workspaceMetadata: [String: WatsonJSON] = ["testKey": .string("testValue")]
+        let intentExample = Example(text: "This is an example of Intent1")
         let workspaceIntent = CreateIntent(intent: "Intent1", description: "description of Intent1", examples: [intentExample])
         let entityValue = CreateValue(value: "Entity1Value", metadata: workspaceMetadata, synonyms: ["Synonym1", "Synonym2"])
         let workspaceEntity = CreateEntity(entity: "Entity1", description: "description of Entity1", values: [entityValue])
-        let workspaceDialogNode = CreateDialogNode(dialogNode: "DialogNode1", description: "description of DialogNode1")
-        let workspaceCounterexample = CreateCounterexample(text: "This is a counterexample")
+        let workspaceDialogNode = DialogNode(dialogNode: "DialogNode1", description: "description of DialogNode1")
+        let workspaceCounterexample = Counterexample(text: "This is a counterexample")
 
-        let createWorkspaceBody = CreateWorkspace(name: workspaceName, description: workspaceDescription, language: workspaceLanguage, intents: [workspaceIntent],
-                                                  entities: [workspaceEntity], dialogNodes: [workspaceDialogNode], counterexamples: [workspaceCounterexample],
-                                                  metadata: workspaceMetadata)
-        assistant.createWorkspace(properties: createWorkspaceBody, failure: failWithError) { workspace in
-            XCTAssertEqual(workspace.name, workspaceName)
-            XCTAssertEqual(workspace.description, workspaceDescription)
-            XCTAssertEqual(workspace.language, workspaceLanguage)
-            XCTAssertNotNil(workspace.workspaceID)
+        assistant.createWorkspace(
+            name: workspaceName,
+            description: workspaceDescription,
+            language: workspaceLanguage,
+            dialogNodes: [workspaceDialogNode],
+            counterexamples: [workspaceCounterexample],
+            metadata: workspaceMetadata,
+            intents: [workspaceIntent],
+            entities: [workspaceEntity],
+            includeAudit: true) {
+                response, error in
 
-            newWorkspace = workspace.workspaceID
-            expectation1.fulfill()
+                if let error = error {
+                    XCTFail(unexpectedErrorMessage(error))
+                    return
+                }
+                guard let workspace = response?.result else {
+                    XCTFail(missingResultMessage)
+                    return
+                }
+
+                XCTAssertEqual(workspace.name, workspaceName)
+                XCTAssertEqual(workspace.description, workspaceDescription)
+                XCTAssertEqual(workspace.language, workspaceLanguage)
+                XCTAssertNotNil(workspace.workspaceID)
+
+                newWorkspace = workspace.workspaceID
+                expectation1.fulfill()
         }
         waitForExpectations(timeout: 20.0)
 
@@ -476,7 +566,18 @@ class AssistantTests: XCTestCase {
         let description2 = "Get the newly created workspace."
         let expectation2 = expectation(description: description2)
 
-        assistant.getWorkspace(workspaceID: newWorkspaceID, export: true, includeAudit: true, failure: failWithError) { workspace in
+        assistant.getWorkspace(workspaceID: newWorkspaceID, export: true, includeAudit: true) {
+            response, error in
+
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+                return
+            }
+            guard let workspace = response?.result else {
+                XCTFail(missingResultMessage)
+                return
+            }
+
             XCTAssertEqual(workspace.name, workspaceName)
             XCTAssertEqual(workspace.description, workspaceDescription)
             XCTAssertEqual(workspace.language, workspaceLanguage)
@@ -488,7 +589,7 @@ class AssistantTests: XCTestCase {
 
             XCTAssertNotNil(workspace.intents)
             for intent in workspace.intents! {
-                XCTAssertEqual(intent.intentName, workspaceIntent.intent)
+                XCTAssertEqual(intent.intent, workspaceIntent.intent)
                 XCTAssertEqual(intent.description, workspaceIntent.description)
                 XCTAssertNotNil(intent.created)
                 XCTAssertNotNil(intent.updated)
@@ -496,7 +597,7 @@ class AssistantTests: XCTestCase {
                 for example in intent.examples! {
                     XCTAssertNotNil(example.created)
                     XCTAssertNotNil(example.updated)
-                    XCTAssertEqual(example.exampleText, intentExample.text)
+                    XCTAssertEqual(example.text, intentExample.text)
                 }
             }
 
@@ -514,7 +615,12 @@ class AssistantTests: XCTestCase {
         let description3 = "Delete the newly created workspace."
         let expectation3 = expectation(description: description3)
 
-        assistant.deleteWorkspace(workspaceID: newWorkspaceID, failure: failWithError) {
+        assistant.deleteWorkspace(workspaceID: newWorkspaceID) {
+            _, error in
+
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+            }
             expectation3.fulfill()
         }
         waitForExpectations()
@@ -524,7 +630,18 @@ class AssistantTests: XCTestCase {
         let description = "List details of a single workspace."
         let expectation = self.expectation(description: description)
 
-        assistant.getWorkspace(workspaceID: workspaceID, export: false, includeAudit: true, failure: failWithError) { workspace in
+        assistant.getWorkspace(workspaceID: workspaceID, export: false, includeAudit: true) {
+            response, error in
+
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+                return
+            }
+            guard let workspace = response?.result else {
+                XCTFail(missingResultMessage)
+                return
+            }
+
             XCTAssertNotNil(workspace.name)
             XCTAssertNotNil(workspace.created)
             XCTAssertNotNil(workspace.updated)
@@ -550,11 +667,23 @@ class AssistantTests: XCTestCase {
         let workspaceName = "swift-sdk-test-workspace"
         let workspaceDescription = "temporary workspace for the swift sdk unit tests"
         let workspaceLanguage = "en"
-        let createWorkspaceBody = CreateWorkspace(name: workspaceName, description: workspaceDescription, language: workspaceLanguage)
-        assistant.createWorkspace(properties: createWorkspaceBody, failure: failWithError) { workspace in
+        let webhook = Webhook(url: "https://watson-sdk-test-hook.ng.bluemix.net", name: "test webhook")
+        assistant.createWorkspace(name: workspaceName, description: workspaceDescription, language: workspaceLanguage, webhooks: [webhook], includeAudit: true) {
+            response, error in
+
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+                return
+            }
+            guard let workspace = response?.result else {
+                XCTFail(missingResultMessage)
+                return
+            }
+
             XCTAssertEqual(workspace.name, workspaceName)
             XCTAssertEqual(workspace.description, workspaceDescription)
             XCTAssertEqual(workspace.language, workspaceLanguage)
+            XCTAssertEqual(workspace.webhooks, [webhook])
             XCTAssertNotNil(workspace.workspaceID)
 
             newWorkspace = workspace.workspaceID
@@ -572,8 +701,18 @@ class AssistantTests: XCTestCase {
         let newWorkspaceName = "swift-sdk-test-workspace-2"
         let newWorkspaceDescription = "new description for the temporary workspace"
 
-        let updateWorkspaceBody = UpdateWorkspace(name: newWorkspaceName, description: newWorkspaceDescription)
-        assistant.updateWorkspace(workspaceID: newWorkspaceID, properties: updateWorkspaceBody, failure: failWithError) { workspace in
+        assistant.updateWorkspace(workspaceID: newWorkspaceID, name: newWorkspaceName, description: newWorkspaceDescription, includeAudit: true) {
+            response, error in
+
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+                return
+            }
+            guard let workspace = response?.result else {
+                XCTFail(missingResultMessage)
+                return
+            }
+
             XCTAssertEqual(workspace.name, newWorkspaceName)
             XCTAssertEqual(workspace.description, newWorkspaceDescription)
             XCTAssertEqual(workspace.language, workspaceLanguage)
@@ -585,7 +724,13 @@ class AssistantTests: XCTestCase {
         let description3 = "Delete the newly created workspace."
         let expectation3 = expectation(description: description3)
 
-        assistant.deleteWorkspace(workspaceID: newWorkspaceID, failure: failWithError) {
+        assistant.deleteWorkspace(workspaceID: newWorkspaceID) {
+            _, error in
+
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+            }
+
             expectation3.fulfill()
         }
         waitForExpectations()
@@ -597,38 +742,28 @@ class AssistantTests: XCTestCase {
         let description = "List all the intents in a workspace."
         let expectation = self.expectation(description: description)
 
-        assistant.listIntents(workspaceID: workspaceID, includeAudit: true, failure: failWithError) { intents in
+        assistant.listIntents(workspaceID: workspaceID, includeAudit: true) {
+            response, error in
+
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+                return
+            }
+            guard let intents = response?.result else {
+                XCTFail(missingResultMessage)
+                return
+            }
+
             for intent in intents.intents {
-                XCTAssertNotNil(intent.intentName)
+                XCTAssertNotNil(intent.intent)
                 XCTAssertNotNil(intent.created)
                 XCTAssertNotNil(intent.updated)
                 XCTAssertNil(intent.examples)
             }
-            XCTAssertNotNil(intents.pagination.refreshUrl)
-            XCTAssertNil(intents.pagination.nextUrl)
+            XCTAssertNotNil(intents.pagination.refreshURL)
+            XCTAssertNil(intents.pagination.nextURL)
             XCTAssertNil(intents.pagination.total)
             XCTAssertNil(intents.pagination.matched)
-            expectation.fulfill()
-        }
-        waitForExpectations()
-    }
-
-    func testListAllIntentsWithIncludeCount() {
-        let description = "List all the intents in a workspace with includeCount as true."
-        let expectation = self.expectation(description: description)
-
-        assistant.listIntents(workspaceID: workspaceID, includeCount: true, includeAudit: true, failure: failWithError) { intents in
-            for intent in intents.intents {
-                XCTAssertNotNil(intent.intentName)
-                XCTAssertNotNil(intent.created)
-                XCTAssertNotNil(intent.updated)
-                XCTAssertNil(intent.examples)
-            }
-            XCTAssertNotNil(intents.pagination.refreshUrl)
-            XCTAssertNil(intents.pagination.nextUrl)
-            XCTAssertNotNil(intents.pagination.total)
-            XCTAssertNotNil(intents.pagination.matched)
-            XCTAssertEqual(intents.pagination.total, intents.intents.count)
             expectation.fulfill()
         }
         waitForExpectations()
@@ -638,16 +773,27 @@ class AssistantTests: XCTestCase {
         let description = "List all the intents in a workspace with pageLimit specified as 1."
         let expectation = self.expectation(description: description)
 
-        assistant.listIntents(workspaceID: workspaceID, pageLimit: 1, includeAudit: true, failure: failWithError) { intents in
+        assistant.listIntents(workspaceID: workspaceID, pageLimit: 1, includeAudit: true) {
+            response, error in
+
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+                return
+            }
+            guard let intents = response?.result else {
+                XCTFail(missingResultMessage)
+                return
+            }
+
             XCTAssertEqual(intents.intents.count, 1)
             for intent in intents.intents {
-                XCTAssertNotNil(intent.intentName)
+                XCTAssertNotNil(intent.intent)
                 XCTAssertNotNil(intent.created)
                 XCTAssertNotNil(intent.updated)
                 XCTAssertNil(intent.examples)
             }
-            XCTAssertNotNil(intents.pagination.refreshUrl)
-            XCTAssertNotNil(intents.pagination.nextUrl)
+            XCTAssertNotNil(intents.pagination.refreshURL)
+            XCTAssertNotNil(intents.pagination.nextURL)
             XCTAssertNil(intents.pagination.total)
             XCTAssertNil(intents.pagination.matched)
             expectation.fulfill()
@@ -659,20 +805,31 @@ class AssistantTests: XCTestCase {
         let description = "List all the intents in a workspace with export as true."
         let expectation = self.expectation(description: description)
 
-        assistant.listIntents(workspaceID: workspaceID, export: true, includeAudit: true, failure: failWithError) { intents in
+        assistant.listIntents(workspaceID: workspaceID, export: true, includeAudit: true) {
+            response, error in
+
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+                return
+            }
+            guard let intents = response?.result else {
+                XCTFail(missingResultMessage)
+                return
+            }
+
             for intent in intents.intents {
-                XCTAssertNotNil(intent.intentName)
+                XCTAssertNotNil(intent.intent)
                 XCTAssertNotNil(intent.created)
                 XCTAssertNotNil(intent.updated)
                 XCTAssertNotNil(intent.examples)
                 for example in intent.examples! {
                     XCTAssertNotNil(example.created)
                     XCTAssertNotNil(example.updated)
-                    XCTAssertNotNil(example.exampleText)
+                    XCTAssertNotNil(example.text)
                 }
             }
-            XCTAssertNotNil(intents.pagination.refreshUrl)
-            XCTAssertNil(intents.pagination.nextUrl)
+            XCTAssertNotNil(intents.pagination.refreshURL)
+            XCTAssertNil(intents.pagination.nextURL)
             XCTAssertNil(intents.pagination.total)
             XCTAssertNil(intents.pagination.matched)
             expectation.fulfill()
@@ -686,10 +843,21 @@ class AssistantTests: XCTestCase {
 
         let newIntentName = "swift-sdk-test-intent" + UUID().uuidString
         let newIntentDescription = "description for \(newIntentName)"
-        let example1 = CreateExample(text: "example 1 for \(newIntentName)")
-        let example2 = CreateExample(text: "example 2 for \(newIntentName)")
-        assistant.createIntent(workspaceID: workspaceID, intent: newIntentName, description: newIntentDescription, examples: [example1, example2], failure: failWithError) { intent in
-            XCTAssertEqual(intent.intentName, newIntentName)
+        let example1 = Example(text: "example 1 for \(newIntentName)")
+        let example2 = Example(text: "example 2 for \(newIntentName)")
+        assistant.createIntent(workspaceID: workspaceID, intent: newIntentName, description: newIntentDescription, examples: [example1, example2], includeAudit: true) {
+            response, error in
+
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+                return
+            }
+            guard let intent = response?.result else {
+                XCTFail(missingResultMessage)
+                return
+            }
+
+            XCTAssertEqual(intent.intent, newIntentName)
             XCTAssertEqual(intent.description, newIntentDescription)
             expectation.fulfill()
         }
@@ -698,7 +866,13 @@ class AssistantTests: XCTestCase {
         let description2 = "Delete the new intent."
         let expectation2 = self.expectation(description: description2)
 
-        assistant.deleteIntent(workspaceID: workspaceID, intent: newIntentName, failure: failWithError) {
+        assistant.deleteIntent(workspaceID: workspaceID, intent: newIntentName) {
+            _, error in
+
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+            }
+
             expectation2.fulfill()
         }
         waitForExpectations()
@@ -708,15 +882,26 @@ class AssistantTests: XCTestCase {
         let description = "Get details of a specific intent."
         let expectation = self.expectation(description: description)
 
-        assistant.getIntent(workspaceID: workspaceID, intent: "weather", export: true, includeAudit: true, failure: failWithError) { intent in
-            XCTAssertNotNil(intent.intentName)
+        assistant.getIntent(workspaceID: workspaceID, intent: "Cancel", export: true, includeAudit: true) {
+            response, error in
+
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+                return
+            }
+            guard let intent = response?.result else {
+                XCTFail(missingResultMessage)
+                return
+            }
+
+            XCTAssertNotNil(intent.intent)
             XCTAssertNotNil(intent.created)
             XCTAssertNotNil(intent.updated)
             XCTAssertNotNil(intent.examples)
             for example in intent.examples! {
                 XCTAssertNotNil(example.created)
                 XCTAssertNotNil(example.updated)
-                XCTAssertNotNil(example.exampleText)
+                XCTAssertNotNil(example.text)
             }
             expectation.fulfill()
         }
@@ -729,10 +914,21 @@ class AssistantTests: XCTestCase {
 
         let newIntentName = "swift-sdk-test-intent" + UUID().uuidString
         let newIntentDescription = "description for \(newIntentName)"
-        let example1 = CreateExample(text: "example 1 for \(newIntentName)")
-        let example2 = CreateExample(text: "example 2 for \(newIntentName)")
-        assistant.createIntent(workspaceID: workspaceID, intent: newIntentName, description: newIntentDescription, examples: [example1, example2], failure: failWithError) { intent in
-            XCTAssertEqual(intent.intentName, newIntentName)
+        let example1 = Example(text: "example 1 for \(newIntentName)")
+        let example2 = Example(text: "example 2 for \(newIntentName)")
+        assistant.createIntent(workspaceID: workspaceID, intent: newIntentName, description: newIntentDescription, examples: [example1, example2], includeAudit: true) {
+            response, error in
+
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+                return
+            }
+            guard let intent = response?.result else {
+                XCTFail(missingResultMessage)
+                return
+            }
+
+            XCTAssertEqual(intent.intent, newIntentName)
             XCTAssertEqual(intent.description, newIntentDescription)
             expectation.fulfill()
         }
@@ -743,10 +939,20 @@ class AssistantTests: XCTestCase {
 
         let updatedIntentName = "updated-name-for-\(newIntentName)"
         let updatedIntentDescription = "updated-description-for-\(newIntentName)"
-        let updatedExample1 = CreateExample(text: "updated example for \(newIntentName)")
-        assistant.updateIntent(workspaceID: workspaceID, intent: newIntentName, newIntent: updatedIntentName, newDescription: updatedIntentDescription,
-                               newExamples: [updatedExample1], failure: failWithError) { intent in
-            XCTAssertEqual(intent.intentName, updatedIntentName)
+        let updatedExample1 = Example(text: "updated example for \(newIntentName)")
+        assistant.updateIntent(workspaceID: workspaceID, intent: newIntentName, newIntent: updatedIntentName, newDescription: updatedIntentDescription, newExamples: [updatedExample1], includeAudit: true) {
+            response, error in
+
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+                return
+            }
+            guard let intent = response?.result else {
+                XCTFail(missingResultMessage)
+                return
+            }
+
+            XCTAssertEqual(intent.intent, updatedIntentName)
             XCTAssertEqual(intent.description, updatedIntentDescription)
             expectation2.fulfill()
         }
@@ -755,7 +961,13 @@ class AssistantTests: XCTestCase {
         let description3 = "Delete the new intent."
         let expectation3 = self.expectation(description: description3)
 
-        assistant.deleteIntent(workspaceID: workspaceID, intent: updatedIntentName, failure: failWithError) {
+        assistant.deleteIntent(workspaceID: workspaceID, intent: updatedIntentName) {
+            _, error in
+
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+            }
+
             expectation3.fulfill()
         }
         waitForExpectations()
@@ -767,34 +979,26 @@ class AssistantTests: XCTestCase {
         let description = "List all the examples of an intent."
         let expectation = self.expectation(description: description)
 
-        assistant.listExamples(workspaceID: workspaceID, intent: "weather", includeAudit: true, failure: failWithError) { examples in
+        assistant.listExamples(workspaceID: workspaceID, intent: "Cancel", includeAudit: true) {
+            response, error in
+
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+                return
+            }
+            guard let examples = response?.result else {
+                XCTFail(missingResultMessage)
+                return
+            }
+
             for example in examples.examples {
                 XCTAssertNotNil(example.created)
                 XCTAssertNotNil(example.updated)
-                XCTAssertNotNil(example.exampleText)
+                XCTAssertNotNil(example.text)
             }
-            XCTAssertNotNil(examples.pagination.refreshUrl)
+            XCTAssertNotNil(examples.pagination.refreshURL)
             XCTAssertNil(examples.pagination.total)
             XCTAssertNil(examples.pagination.matched)
-            expectation.fulfill()
-        }
-        waitForExpectations()
-    }
-
-    func testListAllExamplesWithIncludeCount() {
-        let description = "List all the examples for an intent with includeCount as true."
-        let expectation = self.expectation(description: description)
-
-        assistant.listExamples(workspaceID: workspaceID, intent: "weather", includeCount: true, includeAudit: true, failure: failWithError) { examples in
-            for example in examples.examples {
-                XCTAssertNotNil(example.created)
-                XCTAssertNotNil(example.updated)
-                XCTAssertNotNil(example.exampleText)
-            }
-            XCTAssertNotNil(examples.pagination.refreshUrl)
-            XCTAssertNotNil(examples.pagination.total)
-            XCTAssertNotNil(examples.pagination.matched)
-            XCTAssertGreaterThanOrEqual(examples.pagination.total!, examples.examples.count)
             expectation.fulfill()
         }
         waitForExpectations()
@@ -804,15 +1008,26 @@ class AssistantTests: XCTestCase {
         let description = "List all the examples for an intent with pageLimit specified as 1."
         let expectation = self.expectation(description: description)
 
-        assistant.listExamples(workspaceID: workspaceID, intent: "weather", pageLimit: 1, includeAudit: true, failure: failWithError) { examples in
+        assistant.listExamples(workspaceID: workspaceID, intent: "Cancel", pageLimit: 1, includeAudit: true) {
+            response, error in
+
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+                return
+            }
+            guard let examples = response?.result else {
+                XCTFail(missingResultMessage)
+                return
+            }
+
             XCTAssertEqual(examples.examples.count, 1)
             for example in examples.examples {
                 XCTAssertNotNil(example.created)
                 XCTAssertNotNil(example.updated)
-                XCTAssertNotNil(example.exampleText)
+                XCTAssertNotNil(example.text)
             }
-            XCTAssertNotNil(examples.pagination.refreshUrl)
-            XCTAssertNotNil(examples.pagination.nextUrl)
+            XCTAssertNotNil(examples.pagination.refreshURL)
+            XCTAssertNotNil(examples.pagination.nextURL)
             XCTAssertNil(examples.pagination.total)
             XCTAssertNil(examples.pagination.matched)
             expectation.fulfill()
@@ -825,8 +1040,19 @@ class AssistantTests: XCTestCase {
         let expectation = self.expectation(description: description)
 
         let newExample = "swift-sdk-test-example" + UUID().uuidString
-        assistant.createExample(workspaceID: workspaceID, intent: "weather", text: newExample, failure: failWithError) { example in
-            XCTAssertEqual(example.exampleText, newExample)
+        assistant.createExample(workspaceID: workspaceID, intent: "Cancel", text: newExample, includeAudit: true) {
+            response, error in
+
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+                return
+            }
+            guard let example = response?.result else {
+                XCTFail(missingResultMessage)
+                return
+            }
+
+            XCTAssertEqual(example.text, newExample)
             expectation.fulfill()
         }
         waitForExpectations()
@@ -834,7 +1060,13 @@ class AssistantTests: XCTestCase {
         let description2 = "Delete the new example."
         let expectation2 = self.expectation(description: description2)
 
-        assistant.deleteExample(workspaceID: workspaceID, intent: "weather", text: newExample, failure: failWithError) {
+        assistant.deleteExample(workspaceID: workspaceID, intent: "Cancel", text: newExample) {
+            _, error in
+
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+            }
+
             expectation2.fulfill()
         }
         waitForExpectations()
@@ -844,11 +1076,22 @@ class AssistantTests: XCTestCase {
         let description = "Get details of a specific example."
         let expectation = self.expectation(description: description)
 
-        let exampleText = "tell me the weather"
-        assistant.getExample(workspaceID: workspaceID, intent: "weather", text: exampleText, includeAudit: true, failure: failWithError) { example in
+        let exampleText = "cancel that"
+        assistant.getExample(workspaceID: workspaceID, intent: "Cancel", text: exampleText, includeAudit: true) {
+            response, error in
+
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+                return
+            }
+            guard let example = response?.result else {
+                XCTFail(missingResultMessage)
+                return
+            }
+
             XCTAssertNotNil(example.created)
             XCTAssertNotNil(example.updated)
-            XCTAssertEqual(example.exampleText, exampleText)
+            XCTAssertEqual(example.text, exampleText)
             expectation.fulfill()
         }
         waitForExpectations()
@@ -859,8 +1102,19 @@ class AssistantTests: XCTestCase {
         let expectation = self.expectation(description: description)
 
         let newExample = "swift-sdk-test-example" + UUID().uuidString
-        assistant.createExample(workspaceID: workspaceID, intent: "weather", text: newExample, failure: failWithError) { example in
-            XCTAssertEqual(example.exampleText, newExample)
+        assistant.createExample(workspaceID: workspaceID, intent: "Cancel", text: newExample, includeAudit: true) {
+            response, error in
+
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+                return
+            }
+            guard let example = response?.result else {
+                XCTFail(missingResultMessage)
+                return
+            }
+
+            XCTAssertEqual(example.text, newExample)
             expectation.fulfill()
         }
         waitForExpectations()
@@ -869,8 +1123,19 @@ class AssistantTests: XCTestCase {
         let expectation2 = self.expectation(description: description2)
 
         let updatedText = "updated-" + newExample
-        assistant.updateExample(workspaceID: workspaceID, intent: "weather", text: newExample, newText: updatedText, failure: failWithError) { example in
-            XCTAssertEqual(example.exampleText, updatedText)
+        assistant.updateExample(workspaceID: workspaceID, intent: "Cancel", text: newExample, newText: updatedText, includeAudit: true) {
+            response, error in
+
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+                return
+            }
+            guard let example = response?.result else {
+                XCTFail(missingResultMessage)
+                return
+            }
+
+            XCTAssertEqual(example.text, updatedText)
             expectation2.fulfill()
         }
         waitForExpectations()
@@ -878,7 +1143,13 @@ class AssistantTests: XCTestCase {
         let description3 = "Delete the new example."
         let expectation3 = self.expectation(description: description3)
 
-        assistant.deleteExample(workspaceID: workspaceID, intent: "weather", text: updatedText, failure: failWithError) {
+        assistant.deleteExample(workspaceID: workspaceID, intent: "Cancel", text: updatedText) {
+            _, error in
+
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+            }
+
             expectation3.fulfill()
         }
         waitForExpectations()
@@ -890,36 +1161,27 @@ class AssistantTests: XCTestCase {
         let description = "List all the counterexamples of a workspace."
         let expectation = self.expectation(description: description)
 
-        assistant.listCounterexamples(workspaceID: workspaceID, includeAudit: true, failure: failWithError) { counterexamples in
+        assistant.listCounterexamples(workspaceID: workspaceID, includeAudit: true) {
+            response, error in
+
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+                return
+            }
+            guard let counterexamples = response?.result else {
+                XCTFail(missingResultMessage)
+                return
+            }
+
             for counterexample in counterexamples.counterexamples {
                 XCTAssertNotNil(counterexample.created)
                 XCTAssertNotNil(counterexample.updated)
                 XCTAssertNotNil(counterexample.text)
             }
-            XCTAssertNotNil(counterexamples.pagination.refreshUrl)
-            XCTAssertNil(counterexamples.pagination.nextUrl)
+            XCTAssertNotNil(counterexamples.pagination.refreshURL)
+            XCTAssertNil(counterexamples.pagination.nextURL)
             XCTAssertNil(counterexamples.pagination.total)
             XCTAssertNil(counterexamples.pagination.matched)
-            expectation.fulfill()
-        }
-        waitForExpectations()
-    }
-
-    func testListAllCounterexamplesWithIncludeCount() {
-        let description = "List all the counterexamples of a workspace with includeCount as true."
-        let expectation = self.expectation(description: description)
-
-        assistant.listCounterexamples(workspaceID: workspaceID, includeCount: true, includeAudit: true, failure: failWithError) { counterexamples in
-            for counterexample in counterexamples.counterexamples {
-                XCTAssertNotNil(counterexample.created)
-                XCTAssertNotNil(counterexample.updated)
-                XCTAssertNotNil(counterexample.text)
-            }
-            XCTAssertNotNil(counterexamples.pagination.refreshUrl)
-            XCTAssertNil(counterexamples.pagination.nextUrl)
-            XCTAssertNotNil(counterexamples.pagination.total)
-            XCTAssertNotNil(counterexamples.pagination.matched)
-            XCTAssertEqual(counterexamples.pagination.total, counterexamples.counterexamples.count)
             expectation.fulfill()
         }
         waitForExpectations()
@@ -929,13 +1191,24 @@ class AssistantTests: XCTestCase {
         let description = "List all the counterexamples of a workspace with pageLimit specified as 1."
         let expectation = self.expectation(description: description)
 
-        assistant.listCounterexamples(workspaceID: workspaceID, pageLimit: 1, includeAudit: true, failure: failWithError) { counterexamples in
+        assistant.listCounterexamples(workspaceID: workspaceID, pageLimit: 1, includeAudit: true) {
+            response, error in
+
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+                return
+            }
+            guard let counterexamples = response?.result else {
+                XCTFail(missingResultMessage)
+                return
+            }
+
             for counterexample in counterexamples.counterexamples {
                 XCTAssertNotNil(counterexample.created)
                 XCTAssertNotNil(counterexample.updated)
                 XCTAssertNotNil(counterexample.text)
             }
-            XCTAssertNotNil(counterexamples.pagination.refreshUrl)
+            XCTAssertNotNil(counterexamples.pagination.refreshURL)
             XCTAssertNil(counterexamples.pagination.total)
             XCTAssertNil(counterexamples.pagination.matched)
             XCTAssertEqual(counterexamples.counterexamples.count, 1)
@@ -949,7 +1222,18 @@ class AssistantTests: XCTestCase {
         let expectation = self.expectation(description: description)
 
         let newExample = "swift-sdk-test-counterexample" + UUID().uuidString
-        assistant.createCounterexample(workspaceID: workspaceID, text: newExample, failure: failWithError) { counterexample in
+        assistant.createCounterexample(workspaceID: workspaceID, text: newExample, includeAudit: true) {
+            response, error in
+
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+                return
+            }
+            guard let counterexample = response?.result else {
+                XCTFail(missingResultMessage)
+                return
+            }
+
             XCTAssertNotNil(counterexample.text)
             expectation.fulfill()
         }
@@ -958,7 +1242,13 @@ class AssistantTests: XCTestCase {
         let description2 = "Delete the new counterexample."
         let expectation2 = self.expectation(description: description2)
 
-        assistant.deleteCounterexample(workspaceID: workspaceID, text: newExample, failure: failWithError) {
+        assistant.deleteCounterexample(workspaceID: workspaceID, text: newExample) {
+            _, error in
+
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+            }
+
             expectation2.fulfill()
         }
         waitForExpectations()
@@ -968,11 +1258,22 @@ class AssistantTests: XCTestCase {
         let description = "Get details of a specific counterexample."
         let expectation = self.expectation(description: description)
 
-        let exampleText = "when will it be funny"
-        assistant.getCounterexample(workspaceID: workspaceID, text: exampleText, includeAudit: true, failure: failWithError) { counterexample in
+        let example = "Baseball is my favorite sport"
+        assistant.getCounterexample(workspaceID: workspaceID, text: example, includeAudit: true) {
+            response, error in
+
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+                return
+            }
+            guard let counterexample = response?.result else {
+                XCTFail(missingResultMessage)
+                return
+            }
+
             XCTAssertNotNil(counterexample.created)
             XCTAssertNotNil(counterexample.updated)
-            XCTAssertEqual(counterexample.text, exampleText)
+            XCTAssertEqual(counterexample.text, example)
             expectation.fulfill()
         }
         waitForExpectations()
@@ -983,7 +1284,18 @@ class AssistantTests: XCTestCase {
         let expectation = self.expectation(description: description)
 
         let newExample = "swift-sdk-test-counterexample" + UUID().uuidString
-        assistant.createCounterexample(workspaceID: workspaceID, text: newExample, failure: failWithError) { counterexample in
+        assistant.createCounterexample(workspaceID: workspaceID, text: newExample, includeAudit: true) {
+            response, error in
+
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+                return
+            }
+            guard let counterexample = response?.result else {
+                XCTFail(missingResultMessage)
+                return
+            }
+
             XCTAssertEqual(counterexample.text, newExample)
             expectation.fulfill()
         }
@@ -993,7 +1305,18 @@ class AssistantTests: XCTestCase {
         let expectation2 = self.expectation(description: description2)
 
         let updatedText = "updated-"+newExample
-        assistant.updateCounterexample(workspaceID: workspaceID, text: newExample, newText: updatedText, failure: failWithError) { counterexample in
+        assistant.updateCounterexample(workspaceID: workspaceID, text: newExample, newText: updatedText, includeAudit: true) {
+            response, error in
+
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+                return
+            }
+            guard let counterexample = response?.result else {
+                XCTFail(missingResultMessage)
+                return
+            }
+
             XCTAssertEqual(counterexample.text, updatedText)
             expectation2.fulfill()
         }
@@ -1002,7 +1325,13 @@ class AssistantTests: XCTestCase {
         let description3 = "Delete the new counterexample."
         let expectation3 = self.expectation(description: description3)
 
-        assistant.deleteCounterexample(workspaceID: workspaceID, text: updatedText, failure: failWithError) {
+        assistant.deleteCounterexample(workspaceID: workspaceID, text: updatedText) {
+            _, error in
+
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+            }
+
             expectation3.fulfill()
         }
         waitForExpectations()
@@ -1014,37 +1343,28 @@ class AssistantTests: XCTestCase {
         let description = "List all entities"
         let expectation = self.expectation(description: description)
 
-        assistant.listEntities(workspaceID: workspaceID, includeAudit: true, failure: failWithError){entities in
+        assistant.listEntities(workspaceID: workspaceID, includeAudit: true) {
+            response, error in
+
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+                return
+            }
+            guard let entities = response?.result else {
+                XCTFail(missingResultMessage)
+                return
+            }
+
             for entity in entities.entities {
-                XCTAssertNotNil(entity.entityName)
+                XCTAssertNotNil(entity.entity)
                 XCTAssertNotNil(entity.created)
                 XCTAssertNotNil(entity.updated)
             }
             XCTAssert(entities.entities.count > 0)
-            XCTAssertNotNil(entities.pagination.refreshUrl)
-            XCTAssertNil(entities.pagination.nextUrl)
+            XCTAssertNotNil(entities.pagination.refreshURL)
+            XCTAssertNil(entities.pagination.nextURL)
             XCTAssertNil(entities.pagination.total)
             XCTAssertNil(entities.pagination.matched)
-            expectation.fulfill()
-        }
-        waitForExpectations()
-    }
-
-    func testListAllEntitiesWithIncludeCount() {
-        let description = "List all the entities in a workspace with includeCount as true."
-        let expectation = self.expectation(description: description)
-
-        assistant.listEntities(workspaceID: workspaceID, includeCount: true, includeAudit: true, failure: failWithError) { entities in
-            for entity in entities.entities {
-                XCTAssertNotNil(entity.entityName)
-                XCTAssertNotNil(entity.created)
-                XCTAssertNotNil(entity.updated)
-            }
-            XCTAssertNotNil(entities.pagination.refreshUrl)
-            XCTAssertNil(entities.pagination.nextUrl)
-            XCTAssertNotNil(entities.pagination.total)
-            XCTAssertNotNil(entities.pagination.matched)
-            XCTAssertEqual(entities.pagination.total, entities.entities.count)
             expectation.fulfill()
         }
         waitForExpectations()
@@ -1054,14 +1374,25 @@ class AssistantTests: XCTestCase {
         let description = "List all entities with page limit 1"
         let expectation = self.expectation(description: description)
 
-        assistant.listEntities(workspaceID: workspaceID, pageLimit: 1, includeAudit: true, failure: failWithError){entities in
+        assistant.listEntities(workspaceID: workspaceID, pageLimit: 1, includeAudit: true) {
+            response, error in
+
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+                return
+            }
+            guard let entities = response?.result else {
+                XCTFail(missingResultMessage)
+                return
+            }
+
             for entity in entities.entities {
-                XCTAssertNotNil(entity.entityName)
+                XCTAssertNotNil(entity.entity)
                 XCTAssertNotNil(entity.created)
                 XCTAssertNotNil(entity.updated)
             }
-            XCTAssertNotNil(entities.pagination.refreshUrl)
-            XCTAssertNotNil(entities.pagination.nextUrl)
+            XCTAssertNotNil(entities.pagination.refreshURL)
+            XCTAssertNotNil(entities.pagination.nextURL)
             XCTAssertNil(entities.pagination.total)
             XCTAssertNil(entities.pagination.matched)
 
@@ -1075,32 +1406,53 @@ class AssistantTests: XCTestCase {
         let description = "List all the entities in a workspace with export as true."
         let expectation = self.expectation(description: description)
 
-        assistant.listEntities(workspaceID: workspaceID, export: true, includeAudit: true, failure: failWithError) { entities in
+        assistant.listEntities(workspaceID: workspaceID, export: true, includeAudit: true) {
+            response, error in
+
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+                return
+            }
+            guard let entities = response?.result else {
+                XCTFail(missingResultMessage)
+                return
+            }
+
             for entity in entities.entities {
-                XCTAssertNotNil(entity.entityName)
+                XCTAssertNotNil(entity.entity)
                 XCTAssertNotNil(entity.created)
                 XCTAssertNotNil(entity.updated)
             }
             XCTAssertNotNil(entities.entities)
             XCTAssertNil(entities.pagination.total)
             XCTAssertNil(entities.pagination.matched)
-            XCTAssertNil(entities.pagination.nextUrl)
+            XCTAssertNil(entities.pagination.nextURL)
             expectation.fulfill()
         }
         waitForExpectations()
     }
 
-    func testCreateAndDeleteEntity(){
+    func testCreateAndDeleteEntity() {
         let description = "Create an Entity"
         let expectation = self.expectation(description: description)
 
         let entityName = "swift-sdk-test-entity" + UUID().uuidString
         let entityDescription = "This is a test entity"
-        let entity = CreateEntity.init(entity: entityName, description: entityDescription)
 
-        assistant.createEntity(workspaceID: workspaceID, properties: entity, failure: failWithError){ entityResponse in
-            XCTAssertEqual(entityResponse.entityName, entityName)
-            XCTAssertEqual(entityResponse.description, entityDescription)
+        assistant.createEntity(workspaceID: workspaceID, entity: entityName, description: entityDescription, includeAudit: true) {
+            response, error in
+
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+                return
+            }
+            guard let entity = response?.result else {
+                XCTFail(missingResultMessage)
+                return
+            }
+
+            XCTAssertEqual(entity.entity, entityName)
+            XCTAssertEqual(entity.description, entityDescription)
             expectation.fulfill()
         }
         waitForExpectations()
@@ -1108,23 +1460,39 @@ class AssistantTests: XCTestCase {
         let descriptionTwo = "Delete the entity"
         let expectationTwo = self.expectation(description: descriptionTwo)
 
-        assistant.deleteEntity(workspaceID: workspaceID, entity: entity.entity) {
+        assistant.deleteEntity(workspaceID: workspaceID, entity: entityName) {
+            _, error in
+
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+            }
+
             expectationTwo.fulfill()
         }
         waitForExpectations()
     }
 
-    func testCreateUpdateAndDeleteEntity(){
+    func testCreateUpdateAndDeleteEntity() {
         let description = "Create an Entity"
         let expectation = self.expectation(description: description)
 
         let entityName = "swift-sdk-test-entity" + UUID().uuidString
         let entityDescription = "This is a test entity"
-        let entity = CreateEntity.init(entity: entityName, description: entityDescription)
 
-        assistant.createEntity(workspaceID: workspaceID, properties: entity, failure: failWithError){ entityResponse in
-            XCTAssertEqual(entityResponse.entityName, entityName)
-            XCTAssertEqual(entityResponse.description, entityDescription)
+        assistant.createEntity(workspaceID: workspaceID, entity: entityName, description: entityDescription, includeAudit: true) {
+            response, error in
+
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+                return
+            }
+            guard let entity = response?.result else {
+                XCTFail(missingResultMessage)
+                return
+            }
+
+            XCTAssertEqual(entity.entity, entityName)
+            XCTAssertEqual(entity.description, entityDescription)
             expectation.fulfill()
         }
         waitForExpectations()
@@ -1134,18 +1502,39 @@ class AssistantTests: XCTestCase {
 
         let updatedEntityName = "up-" + entityName
         let updatedEntityDescription = "This is a new description for a test entity"
-        let updatedEntity = UpdateEntity.init(entity: updatedEntityName, description: updatedEntityDescription)
-        assistant.updateEntity(workspaceID: workspaceID, entity: entityName, properties: updatedEntity, failure: failWithError){ entityResponse in
-            XCTAssertEqual(entityResponse.entityName, updatedEntityName)
-            XCTAssertEqual(entityResponse.description, updatedEntityDescription)
-            expectationTwo.fulfill()
+        assistant.updateEntity(
+            workspaceID: workspaceID,
+            entity: entityName,
+            newEntity: updatedEntityName,
+            newDescription: updatedEntityDescription,
+            includeAudit: true) {
+                response, error in
+
+                if let error = error {
+                    XCTFail(unexpectedErrorMessage(error))
+                    return
+                }
+                guard let entity = response?.result else {
+                    XCTFail(missingResultMessage)
+                    return
+                }
+
+                XCTAssertEqual(entity.entity, updatedEntityName)
+                XCTAssertEqual(entity.description, updatedEntityDescription)
+                expectationTwo.fulfill()
         }
         waitForExpectations()
 
         let descriptionFour = "Delete the entity"
         let expectationFour = self.expectation(description: descriptionFour)
 
-        assistant.deleteEntity(workspaceID: workspaceID, entity: updatedEntityName, failure: failWithError) {
+        assistant.deleteEntity(workspaceID: workspaceID, entity: updatedEntityName) {
+            _, error in
+
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+            }
+
             expectationFour.fulfill()
         }
         waitForExpectations()
@@ -1155,14 +1544,36 @@ class AssistantTests: XCTestCase {
         let description = "Get details of a specific entity."
         let expectation = self.expectation(description: description)
 
-        assistant.listEntities(workspaceID: workspaceID, failure: failWithError) {entityCollection in
+        assistant.listEntities(workspaceID: workspaceID, includeAudit: true) {
+            response, error in
+
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+                return
+            }
+            guard let entityCollection = response?.result else {
+                XCTFail(missingResultMessage)
+                return
+            }
+
             XCTAssert(entityCollection.entities.count > 0)
-            let entity = entityCollection.entities[0]
-            self.assistant.getEntity(workspaceID: self.workspaceID, entity: entity.entityName, export: true, includeAudit: true, failure: self.failWithError) { entityExport in
-                XCTAssertEqual(entityExport.entityName, entity.entityName)
-                XCTAssertEqual(entityExport.description, entity.description)
-                XCTAssertNotNil(entityExport.created)
-                XCTAssertNotNil(entityExport.updated)
+            let entity0 = entityCollection.entities[0]
+            self.assistant.getEntity(workspaceID: self.workspaceID, entity: entity0.entity, export: true, includeAudit: true) {
+                response, error in
+
+                if let error = error {
+                    XCTFail(unexpectedErrorMessage(error))
+                    return
+                }
+                guard let entity = response?.result else {
+                    XCTFail(missingResultMessage)
+                    return
+                }
+
+                XCTAssertEqual(entity.entity, entity0.entity)
+                XCTAssertEqual(entity.description, entity0.description)
+                XCTAssertNotNil(entity.created)
+                XCTAssertNotNil(entity.updated)
                 expectation.fulfill()
             }
         }
@@ -1174,21 +1585,30 @@ class AssistantTests: XCTestCase {
     func testListMentions() {
         let description = "List all the mentions for an entity."
         let expectation = self.expectation(description: description)
-        let entityName = "appliance"
+        let entityName = "holiday"
         assistant.listMentions(
             workspaceID: workspaceID,
             entity: entityName,
             export: true,
-            includeAudit: true,
-            failure: failWithError) {
-                mentionCollection in
+            includeAudit: true) {
+                response, error in
+
+                if let error = error {
+                    XCTFail(unexpectedErrorMessage(error))
+                    return
+                }
+                guard let mentionCollection = response?.result else {
+                    XCTFail(missingResultMessage)
+                    return
+                }
+
                 for mention in mentionCollection.examples {
-                    XCTAssertNotNil(mention.exampleText)
-                    XCTAssertNotNil(mention.intentName)
+                    XCTAssertNotNil(mention.text)
+                    XCTAssertNotNil(mention.intent)
                     XCTAssertNotNil(mention.location)
                     XCTAssert(mention.location.count == 2)
                 }
-                XCTAssertNotNil(mentionCollection.pagination.refreshUrl)
+                XCTAssertNotNil(mentionCollection.pagination.refreshURL)
                 expectation.fulfill()
         }
         waitForExpectations()
@@ -1199,37 +1619,53 @@ class AssistantTests: XCTestCase {
     func testListAllValues() {
         let description = "List all the values for an entity."
         let expectation = self.expectation(description: description)
-        let entityName = "appliance"
+        let entityName = "holiday"
         assistant.listValues(
             workspaceID: workspaceID,
             entity: entityName,
             export: true,
-            includeCount: true,
-            includeAudit: true,
-            failure: failWithError) {
-                valueCollection in
+            includeAudit: true) {
+                response, error in
+
+                if let error = error {
+                    XCTFail(unexpectedErrorMessage(error))
+                    return
+                }
+                guard let valueCollection = response?.result else {
+                    XCTFail(missingResultMessage)
+                    return
+                }
+
                 for value in valueCollection.values {
-                    XCTAssertNotNil(value.valueText)
+                    XCTAssertNotNil(value.value)
                     XCTAssertNotNil(value.created)
                     XCTAssertNotNil(value.updated)
                 }
-                XCTAssertNotNil(valueCollection.pagination.refreshUrl)
-                XCTAssertNotNil(valueCollection.pagination.total)
-                XCTAssertNotNil(valueCollection.pagination.matched)
+                XCTAssertNotNil(valueCollection.pagination.refreshURL)
                 expectation.fulfill()
         }
         waitForExpectations()
     }
 
-    func testCreateUpdateAndDeleteValue(){
+    func testCreateUpdateAndDeleteValue() {
         let description = "Create a value for an entity"
         let expectation = self.expectation(description: description)
 
-        let entityName = "appliance"
+        let entityName = "holiday"
         let valueName = "swift-sdk-test-value" + UUID().uuidString
-        let value = CreateValue(value: valueName)
-        assistant.createValue(workspaceID: workspaceID, entity: entityName, properties: value, failure: failWithError) { value in
-            XCTAssertEqual(value.valueText, valueName)
+        assistant.createValue(workspaceID: workspaceID, entity: entityName, value: valueName, includeAudit: true) {
+            response, error in
+
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+                return
+            }
+            guard let value = response?.result else {
+                XCTFail(missingResultMessage)
+                return
+            }
+
+            XCTAssertEqual(value.value, valueName)
             expectation.fulfill()
         }
         waitForExpectations()
@@ -1238,18 +1674,40 @@ class AssistantTests: XCTestCase {
         let expectationTwo = self.expectation(description: descriptionTwo)
 
         let updatedValueName = "up-" + valueName
-        let updatedValue = UpdateValue(value: updatedValueName, metadata: ["oldname": .string(valueName)])
-        assistant.updateValue(workspaceID: workspaceID, entity: entityName, value: valueName, properties: updatedValue, failure: failWithError) { value in
-            XCTAssertEqual(value.valueText, updatedValueName)
-            XCTAssertNotNil(value.metadata)
-            expectationTwo.fulfill()
+        assistant.updateValue(
+            workspaceID: workspaceID,
+            entity: entityName,
+            value: valueName,
+            newValue: updatedValueName,
+            newMetadata: ["oldname": .string(valueName)],
+            includeAudit: true) {
+                response, error in
+
+                if let error = error {
+                    XCTFail(unexpectedErrorMessage(error))
+                    return
+                }
+                guard let value = response?.result else {
+                    XCTFail(missingResultMessage)
+                    return
+                }
+
+                XCTAssertEqual(value.value, updatedValueName)
+                XCTAssertNotNil(value.metadata)
+                expectationTwo.fulfill()
         }
         waitForExpectations()
 
         let descriptionThree = "Delete the updated value"
         let expectationThree = self.expectation(description: descriptionThree)
 
-        assistant.deleteValue(workspaceID: workspaceID, entity: entityName, value: updatedValueName, failure: failWithError) {
+        assistant.deleteValue(workspaceID: workspaceID, entity: entityName, value: updatedValueName) {
+            _, error in
+
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+            }
+
             expectationThree.fulfill()
         }
         waitForExpectations()
@@ -1259,15 +1717,37 @@ class AssistantTests: XCTestCase {
         let description = "Get a value for an entity."
         let expectation = self.expectation(description: description)
 
-        let entityName = "appliance"
+        let entityName = "holiday"
 
-        assistant.listValues(workspaceID: workspaceID, entity: entityName, failure: failWithError) { valueCollection in
+        assistant.listValues(workspaceID: workspaceID, entity: entityName, includeAudit: true) {
+            response, error in
+
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+                return
+            }
+            guard let valueCollection = response?.result else {
+                XCTFail(missingResultMessage)
+                return
+            }
+
             XCTAssert(valueCollection.values.count > 0)
-            let value = valueCollection.values[0]
-            self.assistant.getValue(workspaceID: self.workspaceID, entity: entityName, value: value.valueText, export: true, includeAudit: true, failure: self.failWithError) { valueExport in
-                XCTAssertEqual(valueExport.valueText, value.valueText)
-                XCTAssertNotNil(valueExport.created)
-                XCTAssertNotNil(valueExport.updated)
+            let value0 = valueCollection.values[0]
+            self.assistant.getValue(workspaceID: self.workspaceID, entity: entityName, value: value0.value, export: true, includeAudit: true) {
+                response, error in
+
+                if let error = error {
+                    XCTFail(unexpectedErrorMessage(error))
+                    return
+                }
+                guard let value = response?.result else {
+                    XCTFail(missingResultMessage)
+                    return
+                }
+
+                XCTAssertEqual(value0.value, value.value)
+                XCTAssertNotNil(value.created)
+                XCTAssertNotNil(value.updated)
                 expectation.fulfill()
             }
         }
@@ -1280,34 +1760,26 @@ class AssistantTests: XCTestCase {
         let description = "List all the synonyms for an entity and value."
         let expectation = self.expectation(description: description)
 
-        assistant.listSynonyms(workspaceID: workspaceID, entity: "appliance", value: "lights", includeAudit: true, failure: failWithError) { synonyms in
+        assistant.listSynonyms(workspaceID: workspaceID, entity: "holiday", value: "new years", includeAudit: true) {
+            response, error in
+
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+                return
+            }
+            guard let synonyms = response?.result else {
+                XCTFail(missingResultMessage)
+                return
+            }
+
             for synonym in synonyms.synonyms {
                 XCTAssertNotNil(synonym.created)
                 XCTAssertNotNil(synonym.updated)
-                XCTAssertNotNil(synonym.synonymText)
+                XCTAssertNotNil(synonym.synonym)
             }
-            XCTAssertNotNil(synonyms.pagination.refreshUrl)
+            XCTAssertNotNil(synonyms.pagination.refreshURL)
             XCTAssertNil(synonyms.pagination.total)
             XCTAssertNil(synonyms.pagination.matched)
-            expectation.fulfill()
-        }
-        waitForExpectations()
-    }
-
-    func testListAllSynonymWithIncludeCount() {
-        let description = "List all the synonyms for an entity and value with includeCount as true."
-        let expectation = self.expectation(description: description)
-
-        assistant.listSynonyms(workspaceID: workspaceID, entity: "appliance", value: "lights", includeCount: true, includeAudit: true, failure: failWithError) { synonyms in
-            for synonym in synonyms.synonyms {
-                XCTAssertNotNil(synonym.created)
-                XCTAssertNotNil(synonym.updated)
-                XCTAssertNotNil(synonym.synonymText)
-            }
-            XCTAssertNotNil(synonyms.pagination.refreshUrl)
-            XCTAssertNotNil(synonyms.pagination.total)
-            XCTAssertNotNil(synonyms.pagination.matched)
-            XCTAssertEqual(synonyms.pagination.total, synonyms.synonyms.count)
             expectation.fulfill()
         }
         waitForExpectations()
@@ -1317,15 +1789,26 @@ class AssistantTests: XCTestCase {
         let description = "List all the synonyms for an entity and value with pageLimit specified as 1."
         let expectation = self.expectation(description: description)
 
-        assistant.listSynonyms(workspaceID: workspaceID, entity: "appliance", value: "lights", pageLimit: 1, includeAudit: true, failure: failWithError) { synonyms in
+        assistant.listSynonyms(workspaceID: workspaceID, entity: "holiday", value: "new years", pageLimit: 1, includeAudit: true) {
+            response, error in
+
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+                return
+            }
+            guard let synonyms = response?.result else {
+                XCTFail(missingResultMessage)
+                return
+            }
+
             XCTAssertEqual(synonyms.synonyms.count, 1)
             for synonym in synonyms.synonyms {
                 XCTAssertNotNil(synonym.created)
                 XCTAssertNotNil(synonym.updated)
-                XCTAssertNotNil(synonym.synonymText)
+                XCTAssertNotNil(synonym.synonym)
             }
-            XCTAssertNotNil(synonyms.pagination.refreshUrl)
-            XCTAssertNotNil(synonyms.pagination.nextUrl)
+            XCTAssertNotNil(synonyms.pagination.refreshURL)
+            XCTAssertNotNil(synonyms.pagination.nextURL)
             XCTAssertNil(synonyms.pagination.total)
             XCTAssertNil(synonyms.pagination.matched)
             expectation.fulfill()
@@ -1338,8 +1821,19 @@ class AssistantTests: XCTestCase {
         let expectation = self.expectation(description: description)
 
         let newSynonym = "swift-sdk-test-synonym" + UUID().uuidString
-        assistant.createSynonym(workspaceID: workspaceID, entity: "appliance", value: "lights", synonym: newSynonym, failure: failWithError) { synonym in
-            XCTAssertEqual(synonym.synonymText, newSynonym)
+        assistant.createSynonym(workspaceID: workspaceID, entity: "holiday", value: "new years", synonym: newSynonym, includeAudit: true) {
+            response, error in
+
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+                return
+            }
+            guard let synonym = response?.result else {
+                XCTFail(missingResultMessage)
+                return
+            }
+
+            XCTAssertEqual(synonym.synonym, newSynonym)
             expectation.fulfill()
         }
         waitForExpectations()
@@ -1347,7 +1841,13 @@ class AssistantTests: XCTestCase {
         let description2 = "Delete the new synonym."
         let expectation2 = self.expectation(description: description2)
 
-        assistant.deleteSynonym(workspaceID: workspaceID, entity: "appliance", value: "lights", synonym: newSynonym, failure: failWithError) {
+        assistant.deleteSynonym(workspaceID: workspaceID, entity: "holiday", value: "new years", synonym: newSynonym) {
+            _, error in
+
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+            }
+
             expectation2.fulfill()
         }
         waitForExpectations()
@@ -1357,9 +1857,20 @@ class AssistantTests: XCTestCase {
         let description = "Get details of a specific synonym."
         let expectation = self.expectation(description: description)
 
-        let synonymName = "headlight"
-        assistant.getSynonym(workspaceID: workspaceID, entity: "appliance", value: "lights", synonym: synonymName, includeAudit: true, failure: failWithError) { synonym in
-            XCTAssertEqual(synonym.synonymText, synonymName)
+        let synonymName = "jan 1"
+        assistant.getSynonym(workspaceID: workspaceID, entity: "holiday", value: "new years", synonym: synonymName, includeAudit: true) {
+            response, error in
+
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+                return
+            }
+            guard let synonym = response?.result else {
+                XCTFail(missingResultMessage)
+                return
+            }
+
+            XCTAssertEqual(synonym.synonym, synonymName)
             XCTAssertNotNil(synonym.created)
             XCTAssertNotNil(synonym.updated)
             expectation.fulfill()
@@ -1372,8 +1883,19 @@ class AssistantTests: XCTestCase {
         let expectation = self.expectation(description: description)
 
         let newSynonym = "swift-sdk-test-synonym" + UUID().uuidString
-        assistant.createSynonym(workspaceID: workspaceID, entity: "appliance", value: "lights", synonym: newSynonym, failure: failWithError) { synonym in
-            XCTAssertEqual(synonym.synonymText, newSynonym)
+        assistant.createSynonym(workspaceID: workspaceID, entity: "holiday", value: "new years", synonym: newSynonym, includeAudit: true) {
+            response, error in
+
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+                return
+            }
+            guard let synonym = response?.result else {
+                XCTFail(missingResultMessage)
+                return
+            }
+
+            XCTAssertEqual(synonym.synonym, newSynonym)
             expectation.fulfill()
         }
         waitForExpectations()
@@ -1382,8 +1904,19 @@ class AssistantTests: XCTestCase {
         let expectation2 = self.expectation(description: description2)
 
         let updatedSynonym = "new-" + newSynonym
-        assistant.updateSynonym(workspaceID: workspaceID, entity: "appliance", value: "lights", synonym: newSynonym, newSynonym: updatedSynonym, failure: failWithError){ synonym in
-            XCTAssertEqual(synonym.synonymText, updatedSynonym)
+        assistant.updateSynonym(workspaceID: workspaceID, entity: "holiday", value: "new years", synonym: newSynonym, newSynonym: updatedSynonym, includeAudit: true) {
+            response, error in
+
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+                return
+            }
+            guard let synonym = response?.result else {
+                XCTFail(missingResultMessage)
+                return
+            }
+
+            XCTAssertEqual(synonym.synonym, updatedSynonym)
             expectation2.fulfill()
         }
         waitForExpectations()
@@ -1391,7 +1924,13 @@ class AssistantTests: XCTestCase {
         let description3 = "Delete the new synonym."
         let expectation3 = self.expectation(description: description3)
 
-        assistant.deleteSynonym(workspaceID: workspaceID, entity: "appliance", value: "lights", synonym: updatedSynonym, failure: failWithError) {
+        assistant.deleteSynonym(workspaceID: workspaceID, entity: "holiday", value: "new years", synonym: updatedSynonym) {
+            _, error in
+
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+            }
+
             expectation3.fulfill()
         }
         waitForExpectations()
@@ -1403,14 +1942,23 @@ class AssistantTests: XCTestCase {
         let description = "List all dialog nodes"
         let expectation = self.expectation(description: description)
 
-        assistant.listDialogNodes(workspaceID: workspaceID, includeCount: true, failure: failWithError) { nodes in
+        assistant.listDialogNodes(workspaceID: workspaceID, includeAudit: true) {
+            response, error in
+
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+                return
+            }
+            guard let nodes = response?.result else {
+                XCTFail(missingResultMessage)
+                return
+            }
+
             for node in nodes.dialogNodes {
-                XCTAssertNotNil(node.dialogNodeID)
+                XCTAssertNotNil(node.dialogNode)
             }
             XCTAssertGreaterThan(nodes.dialogNodes.count, 0)
-            XCTAssertNotNil(nodes.pagination.refreshUrl)
-            XCTAssertNotNil(nodes.pagination.total)
-            XCTAssertNotNil(nodes.pagination.matched)
+            XCTAssertNotNil(nodes.pagination.refreshURL)
             expectation.fulfill()
         }
         waitForExpectations()
@@ -1418,52 +1966,55 @@ class AssistantTests: XCTestCase {
 
     func testCreateAndDeleteDialogNode() {
         let description1 = "Create a dialog node."
+        let dialogNode = "OrderMyPizza"
+        let dialogMetadata: [String: WatsonJSON] = ["swift-sdk-test": .boolean(true)]
         let expectation1 = self.expectation(description: description1)
 
-        let dialogNode = CreateDialogNode(
-            dialogNode: "YesYouCan",
+        assistant.createDialogNode(
+            workspaceID: workspaceID,
+            dialogNode: dialogNode,
             description: "Reply affirmatively",
             conditions: "#order_pizza",
-            parent: nil,
-            previousSibling: nil,
-            output: DialogNodeOutput(additionalProperties: [
-                "text": .object([
-                    "selection_policy": .string("random"),
-                    "values": .array([.string("Yes you can!"), .string("Of course!")]),
-                ]),
-            ]),
-            context: nil,
-            metadata: ["swift-sdk-test": .boolean(true)],
-            nextStep: nil,
-            actions: nil,
-            title: "YesYouCan",
-            nodeType: "standard",
-            eventName: nil,
-            variable: nil)
-        assistant.createDialogNode(workspaceID: workspaceID, properties: dialogNode, failure: failWithError) {
-            node in
-            XCTAssertEqual(dialogNode.dialogNode, node.dialogNodeID)
-            XCTAssertEqual(dialogNode.description, node.description)
-            XCTAssertEqual(dialogNode.conditions, node.conditions)
-            XCTAssertNil(node.parent)
-            XCTAssertNil(node.previousSibling)
-            XCTAssertEqual(dialogNode.output!.additionalProperties["text"], node.output!.additionalProperties["text"])
-            XCTAssertNil(node.context)
-            XCTAssertEqual(dialogNode.metadata!, node.metadata!)
-            XCTAssertNil(node.nextStep)
-            XCTAssertNil(node.actions)
-            XCTAssertEqual(dialogNode.title!, node.title)
-            XCTAssertEqual(dialogNode.nodeType!, node.nodeType)
-            XCTAssertNil(node.eventName)
-            XCTAssertNil(node.variable)
-            expectation1.fulfill()
+            metadata: dialogMetadata,
+            title: "Order Pizza",
+            includeAudit: true) {
+                response, error in
+
+                if let error = error {
+                    XCTFail(unexpectedErrorMessage(error))
+                    return
+                }
+                guard let node = response?.result else {
+                    XCTFail(missingResultMessage)
+                    return
+                }
+
+                XCTAssertEqual(node.dialogNode, dialogNode)
+                XCTAssertEqual(node.description, "Reply affirmatively")
+                XCTAssertEqual(node.conditions, "#order_pizza")
+                XCTAssertNil(node.parent)
+                XCTAssertNil(node.previousSibling)
+                XCTAssertNil(node.context)
+                XCTAssertEqual(node.metadata!, dialogMetadata)
+                XCTAssertNil(node.nextStep)
+                XCTAssertNil(node.actions)
+                XCTAssertEqual(node.title, "Order Pizza")
+                XCTAssertNil(node.eventName)
+                XCTAssertNil(node.variable)
+                expectation1.fulfill()
         }
         waitForExpectations()
 
         let description2 = "Delete a dialog node"
         let expectation2 = self.expectation(description: description2)
 
-        assistant.deleteDialogNode(workspaceID: workspaceID, dialogNode: dialogNode.dialogNode, failure: failWithError) {
+        assistant.deleteDialogNode(workspaceID: workspaceID, dialogNode: dialogNode) {
+            _, error in
+
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+            }
+
             expectation2.fulfill()
         }
         waitForExpectations()
@@ -1472,27 +2023,55 @@ class AssistantTests: XCTestCase {
     func testCreateUpdateAndDeleteDialogNode() {
         let description1 = "Create a dialog node."
         let expectation1 = self.expectation(description: description1)
-        let dialogNode = CreateDialogNode(dialogNode: "test-node")
-        assistant.createDialogNode(workspaceID: workspaceID, properties: dialogNode, failure: failWithError) {
-            node in
-            XCTAssertEqual(dialogNode.dialogNode, node.dialogNodeID)
+        assistant.createDialogNode(workspaceID: workspaceID, dialogNode: "test-node", includeAudit: true) {
+            response, error in
+
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+                return
+            }
+            guard let node = response?.result else {
+                XCTFail(missingResultMessage)
+                return
+            }
+
+            XCTAssertEqual(node.dialogNode, "test-node")
             expectation1.fulfill()
         }
         waitForExpectations()
 
         let description2 = "Update a dialog node."
         let expectation2 = self.expectation(description: description2)
-        let updatedNode = UpdateDialogNode(dialogNode: "test-node-updated")
-        assistant.updateDialogNode(workspaceID: workspaceID, dialogNode: "test-node", properties: updatedNode, failure: failWithError) {
-            node in
-            XCTAssertEqual(updatedNode.dialogNode, node.dialogNodeID)
-            expectation2.fulfill()
+        assistant.updateDialogNode(
+            workspaceID: workspaceID,
+            dialogNode: "test-node",
+            newDialogNode: "test-node-updated",
+            includeAudit: true) {
+                response, error in
+
+                if let error = error {
+                    XCTFail(unexpectedErrorMessage(error))
+                    return
+                }
+                guard let node = response?.result else {
+                    XCTFail(missingResultMessage)
+                    return
+                }
+
+                XCTAssertEqual(node.dialogNode, "test-node-updated")
+                expectation2.fulfill()
         }
         waitForExpectations()
 
         let description3 = "Delete a dialog node."
         let expectation3 = self.expectation(description: description3)
-        assistant.deleteDialogNode(workspaceID: workspaceID, dialogNode: updatedNode.dialogNode!, failure: failWithError) {
+        assistant.deleteDialogNode(workspaceID: workspaceID, dialogNode: "test-node-updated") {
+            _, error in
+
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+            }
+
             expectation3.fulfill()
         }
         waitForExpectations()
@@ -1501,17 +2080,38 @@ class AssistantTests: XCTestCase {
     func testGetDialogNode() {
         let description = "Get details of a specific dialog node."
         let expectation = self.expectation(description: description)
-        assistant.listDialogNodes(workspaceID: workspaceID, failure: failWithError) { nodes in
+        assistant.listDialogNodes(workspaceID: workspaceID, includeAudit: true) {
+            response, error in
+
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+                return
+            }
+            guard let nodes = response?.result else {
+                XCTFail(missingResultMessage)
+                return
+            }
+
             XCTAssertGreaterThan(nodes.dialogNodes.count, 0)
             let dialogNode = nodes.dialogNodes.first!
             self.assistant.getDialogNode(
                 workspaceID: self.workspaceID,
-                dialogNode: dialogNode.dialogNodeID,
-                failure: self.failWithError) {
-                    node in
-                    XCTAssertEqual(dialogNode.dialogNodeID, node.dialogNodeID)
+                dialogNode: dialogNode.dialogNode,
+                includeAudit: true) {
+                    response, error in
+
+                    if let error = error {
+                        XCTFail(unexpectedErrorMessage(error))
+                        return
+                    }
+                    guard let node = response?.result else {
+                        XCTFail(missingResultMessage)
+                        return
+                    }
+
+                    XCTAssertEqual(dialogNode.dialogNode, node.dialogNode)
                     expectation.fulfill()
-                }
+            }
         }
         waitForExpectations()
     }
@@ -1521,7 +2121,18 @@ class AssistantTests: XCTestCase {
     func testListAllLogs() {
         let expectation = self.expectation(description: "List all logs")
         let filter = "workspace_id::\(workspaceID),language::en"
-        assistant.listAllLogs(filter: filter, failure: failWithError) { logCollection in
+        assistant.listAllLogs(filter: filter) {
+            response, error in
+
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+                return
+            }
+            guard let logCollection = response?.result else {
+                XCTFail(missingResultMessage)
+                return
+            }
+
             XCTAssert(logCollection.logs.count > 0)
             expectation.fulfill()
         }
@@ -1530,7 +2141,18 @@ class AssistantTests: XCTestCase {
 
     func testListLogs() {
         let expectation = self.expectation(description: "List logs")
-        assistant.listLogs(workspaceID: workspaceID, failure: failWithError) { logCollection in
+        assistant.listLogs(workspaceID: workspaceID) {
+            response, error in
+
+            if let error = error {
+                XCTFail(unexpectedErrorMessage(error))
+                return
+            }
+            guard let logCollection = response?.result else {
+                XCTFail(missingResultMessage)
+                return
+            }
+
             XCTAssert(logCollection.logs.count > 0)
             expectation.fulfill()
         }
@@ -1543,8 +2165,14 @@ class AssistantTests: XCTestCase {
         let description = "Start a conversation with an invalid workspace."
         let expectation = self.expectation(description: description)
         let workspaceID = "this-id-is-unknown"
-        let failure = { (error: Error) in expectation.fulfill() }
-        assistant.message(workspaceID: workspaceID, failure: failure, success: failWithResult)
+        assistant.message(workspaceID: workspaceID) {
+            _, error in
+
+            if error == nil {
+                XCTFail(missingErrorMessage)
+            }
+            expectation.fulfill()
+        }
         waitForExpectations()
     }
 
@@ -1552,8 +2180,15 @@ class AssistantTests: XCTestCase {
         let description = "Start a conversation with an invalid workspace."
         let expectation = self.expectation(description: description)
         let workspaceID = "this id is invalid"
-        let failure = { (error: Error) in expectation.fulfill() }
-        assistant.message(workspaceID: workspaceID, failure: failure, success: failWithResult)
+
+        assistant.message(workspaceID: workspaceID) {
+            _, error in
+
+            if error == nil {
+                XCTFail(missingErrorMessage)
+            }
+            expectation.fulfill()
+        }
         waitForExpectations()
     }
 
@@ -1561,16 +2196,20 @@ class AssistantTests: XCTestCase {
         let description = "Start a conversation with an invalid workspace."
         let expectation = self.expectation(description: description)
         assistant.serviceURL = "this is broken"
-        let failure = { (error: Error) in
+        assistant.listWorkspaces { (_, error) in
+            guard let error = error else {
+                XCTFail(missingErrorMessage)
+                return
+            }
+
             switch error {
-            case RestError.badURL:
+            case WatsonError.badURL:
                 break
             default:
-                XCTFail("Unexpected error response")
+                XCTFail("Unexpected error: \(error)")
             }
             expectation.fulfill()
         }
-        assistant.listWorkspaces(failure: failure, success: failWithResult)
         waitForExpectations()
     }
 }
