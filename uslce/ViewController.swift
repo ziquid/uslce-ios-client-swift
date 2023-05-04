@@ -29,6 +29,9 @@ class ViewController: UIViewController, WKUIDelegate, WKNavigationDelegate {
 
     override func loadView() {
         let webConfiguration = WKWebViewConfiguration()
+        webConfiguration.allowsInlineMediaPlayback = true
+        let noAudiovisualMediaType: WKAudiovisualMediaTypes = []
+        webConfiguration.mediaTypesRequiringUserActionForPlayback = noAudiovisualMediaType
         webView = WKWebView(frame: .zero, configuration: webConfiguration)
         webView.contentMode = .scaleAspectFill
         webView.uiDelegate = self
@@ -140,9 +143,9 @@ class ViewController: UIViewController, WKUIDelegate, WKNavigationDelegate {
         
         //        os_log("UUID: %@", type: .info, uuidPrefix + uuid!)
         //        #ifdef DEBUG
-        //              let myURL = "http://usl15.dd:8083/" + game + "/bounce/" + uuid!
+//        let myURL = "http://uslce.lndo.site/" + game + "/bounce/" + uuid!
         //        #else
-        let myURL = "http://uslce.games.ziquid.com/" + game + "/bounce/" + uuid!
+         let myURL = "http://zg.games.ziquid.com/" + game + "/bounce/" + uuid!
         //        #endif
         os_log("URL: %@", type: .info, myURL)
         
