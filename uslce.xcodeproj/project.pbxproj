@@ -13,9 +13,25 @@
 		7C9EE2DD204B4E99002A4CD0 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C9EE2DC204B4E99002A4CD0 /* AppDelegate.swift */; };
 		7C9EE2DF204B4E99002A4CD0 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C9EE2DE204B4E99002A4CD0 /* ViewController.swift */; };
 		7C9EE2E2204B4E99002A4CD0 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 7C9EE2E0204B4E99002A4CD0 /* Main.storyboard */; };
-		7C9EE2E4204B4E99002A4CD0 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7C9EE2E3204B4E99002A4CD0 /* Assets.xcassets */; };
 		7C9EE2E7204B4E99002A4CD0 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 7C9EE2E5204B4E99002A4CD0 /* LaunchScreen.storyboard */; };
+		7CBEE4BA2A81E08C0079CD5D /* Credentials.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C2A48872161B0BA000766AD /* Credentials.swift */; };
+		7CBEE4BB2A81E08C0079CD5D /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C9EE2DE204B4E99002A4CD0 /* ViewController.swift */; };
+		7CBEE4BC2A81E08C0079CD5D /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C9EE2DC204B4E99002A4CD0 /* AppDelegate.swift */; };
+		7CBEE4BE2A81E08C0079CD5D /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7C2A48892161B285000766AD /* StoreKit.framework */; };
+		7CBEE4C22A81E08C0079CD5D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 7C9EE2E5204B4E99002A4CD0 /* LaunchScreen.storyboard */; };
+		7CBEE4CD2A81E5890079CD5D /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 7C9EE2E0204B4E99002A4CD0 /* Main.storyboard */; };
+		7CBEE4D22A81F3710079CD5D /* USLDefs.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7CBEE4D12A81F3710079CD5D /* USLDefs.swift */; };
+		7CBEE4D42A81F4850079CD5D /* CGDefs.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7CBEE4D32A81F4850079CD5D /* CGDefs.swift */; };
 		7CC54699233864070019E3A1 /* In the air tonight teaser.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 7CC54698233864070019E3A1 /* In the air tonight teaser.mp3 */; };
+		7CDCFD0A2A9C200B00BE659D /* Credentials.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C2A48872161B0BA000766AD /* Credentials.swift */; };
+		7CDCFD0B2A9C200B00BE659D /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C9EE2DE204B4E99002A4CD0 /* ViewController.swift */; };
+		7CDCFD0C2A9C200B00BE659D /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C9EE2DC204B4E99002A4CD0 /* AppDelegate.swift */; };
+		7CDCFD0F2A9C200B00BE659D /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7C2A48892161B285000766AD /* StoreKit.framework */; };
+		7CDCFD112A9C200B00BE659D /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 7C9EE2E0204B4E99002A4CD0 /* Main.storyboard */; };
+		7CDCFD132A9C200B00BE659D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7C9EE2E3204B4E99002A4CD0 /* Assets.xcassets */; };
+		7CDCFD1A2A9C220C00BE659D /* PhxLaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 7CDCFD192A9C220C00BE659D /* PhxLaunchScreen.storyboard */; };
+		7CDCFD1C2A9C23B600BE659D /* cg15 copy-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 7CDCFD1B2A9C23B600BE659D /* cg15 copy-Info.plist */; };
+		7CDCFD1F2A9C4D1B00BE659D /* PhxDefs.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7CDCFD1E2A9C4D1B00BE659D /* PhxDefs.swift */; };
 		7CE3F5F824DE1B8900E98F8D /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7C2A48892161B285000766AD /* StoreKit.framework */; };
 /* End PBXBuildFile section */
 
@@ -33,7 +49,17 @@
 		7C9EE2E3204B4E99002A4CD0 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		7C9EE2E6204B4E99002A4CD0 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		7C9EE2E8204B4E99002A4CD0 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		7CBEE4C92A81E08C0079CD5D /* cg15.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = cg15.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		7CBEE4CE2A81E95E0079CD5D /* uslce copy-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "uslce copy-Info.plist"; path = "../../../../.Trash/uslce copy-Info.plist"; sourceTree = "<group>"; };
+		7CBEE4D12A81F3710079CD5D /* USLDefs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = USLDefs.swift; sourceTree = "<group>"; };
+		7CBEE4D32A81F4850079CD5D /* CGDefs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CGDefs.swift; sourceTree = "<group>"; };
+		7CBEE4D52A8339800079CD5D /* cg-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "cg-Info.plist"; sourceTree = "<group>"; };
 		7CC54698233864070019E3A1 /* In the air tonight teaser.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = "In the air tonight teaser.mp3"; sourceTree = "<group>"; };
+		7CDCFD172A9C200B00BE659D /* phx.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = phx.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		7CDCFD192A9C220C00BE659D /* PhxLaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = PhxLaunchScreen.storyboard; sourceTree = "<group>"; };
+		7CDCFD1B2A9C23B600BE659D /* cg15 copy-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "cg15 copy-Info.plist"; path = "../../../../.Trash/cg15 copy-Info.plist"; sourceTree = "<group>"; };
+		7CDCFD1D2A9C23E600BE659D /* phx-info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "phx-info.plist"; sourceTree = "<group>"; };
+		7CDCFD1E2A9C4D1B00BE659D /* PhxDefs.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PhxDefs.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -45,12 +71,30 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		7CBEE4BD2A81E08C0079CD5D /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				7CBEE4BE2A81E08C0079CD5D /* StoreKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		7CDCFD0E2A9C200B00BE659D /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				7CDCFD0F2A9C200B00BE659D /* StoreKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
 		7C2A487E2161ABFF000766AD /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				7CDCFD1B2A9C23B600BE659D /* cg15 copy-Info.plist */,
+				7CBEE4CE2A81E95E0079CD5D /* uslce copy-Info.plist */,
 				7C2A48892161B285000766AD /* StoreKit.framework */,
 				7C2A48812161AC26000766AD /* Info.plist */,
 			);
@@ -73,6 +117,8 @@
 			isa = PBXGroup;
 			children = (
 				7C9EE2D9204B4E99002A4CD0 /* uslce.app */,
+				7CBEE4C92A81E08C0079CD5D /* cg15.app */,
+				7CDCFD172A9C200B00BE659D /* phx.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -84,10 +130,16 @@
 				7C2A48872161B0BA000766AD /* Credentials.swift */,
 				7C9EE2DC204B4E99002A4CD0 /* AppDelegate.swift */,
 				7C9EE2DE204B4E99002A4CD0 /* ViewController.swift */,
+				7CBEE4D12A81F3710079CD5D /* USLDefs.swift */,
+				7CBEE4D32A81F4850079CD5D /* CGDefs.swift */,
+				7CDCFD1E2A9C4D1B00BE659D /* PhxDefs.swift */,
 				7C9EE2E0204B4E99002A4CD0 /* Main.storyboard */,
 				7C9EE2E3204B4E99002A4CD0 /* Assets.xcassets */,
 				7C9EE2E5204B4E99002A4CD0 /* LaunchScreen.storyboard */,
 				7C9EE2E8204B4E99002A4CD0 /* Info.plist */,
+				7CBEE4D52A8339800079CD5D /* cg-Info.plist */,
+				7CDCFD1D2A9C23E600BE659D /* phx-info.plist */,
+				7CDCFD192A9C220C00BE659D /* PhxLaunchScreen.storyboard */,
 			);
 			path = uslce;
 			sourceTree = "<group>";
@@ -110,6 +162,40 @@
 			name = uslce;
 			productName = uslce;
 			productReference = 7C9EE2D9204B4E99002A4CD0 /* uslce.app */;
+			productType = "com.apple.product-type.application";
+		};
+		7CBEE4B82A81E08C0079CD5D /* cg15 */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 7CBEE4C62A81E08C0079CD5D /* Build configuration list for PBXNativeTarget "cg15" */;
+			buildPhases = (
+				7CBEE4B92A81E08C0079CD5D /* Sources */,
+				7CBEE4BD2A81E08C0079CD5D /* Frameworks */,
+				7CBEE4BF2A81E08C0079CD5D /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = cg15;
+			productName = uslce;
+			productReference = 7CBEE4C92A81E08C0079CD5D /* cg15.app */;
+			productType = "com.apple.product-type.application";
+		};
+		7CDCFD082A9C200B00BE659D /* phx */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 7CDCFD142A9C200B00BE659D /* Build configuration list for PBXNativeTarget "phx" */;
+			buildPhases = (
+				7CDCFD092A9C200B00BE659D /* Sources */,
+				7CDCFD0E2A9C200B00BE659D /* Frameworks */,
+				7CDCFD102A9C200B00BE659D /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = phx;
+			productName = uslce;
+			productReference = 7CDCFD172A9C200B00BE659D /* phx.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -155,6 +241,8 @@
 			projectRoot = "";
 			targets = (
 				7C9EE2D8204B4E99002A4CD0 /* uslce */,
+				7CBEE4B82A81E08C0079CD5D /* cg15 */,
+				7CDCFD082A9C200B00BE659D /* phx */,
 			);
 		};
 /* End PBXProject section */
@@ -168,8 +256,27 @@
 				7C7344122352AF9F00BD919B /* mr roboto intro.mp3 in Resources */,
 				7C9EE2E7204B4E99002A4CD0 /* LaunchScreen.storyboard in Resources */,
 				7C7344142353BD3C00BD919B /* Uprising intro.mp3 in Resources */,
-				7C9EE2E4204B4E99002A4CD0 /* Assets.xcassets in Resources */,
 				7C9EE2E2204B4E99002A4CD0 /* Main.storyboard in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		7CBEE4BF2A81E08C0079CD5D /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				7CBEE4CD2A81E5890079CD5D /* Main.storyboard in Resources */,
+				7CBEE4C22A81E08C0079CD5D /* LaunchScreen.storyboard in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		7CDCFD102A9C200B00BE659D /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				7CDCFD1A2A9C220C00BE659D /* PhxLaunchScreen.storyboard in Resources */,
+				7CDCFD112A9C200B00BE659D /* Main.storyboard in Resources */,
+				7CDCFD1C2A9C23B600BE659D /* cg15 copy-Info.plist in Resources */,
+				7CDCFD132A9C200B00BE659D /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -182,7 +289,30 @@
 			files = (
 				7C2A48882161B0BA000766AD /* Credentials.swift in Sources */,
 				7C9EE2DF204B4E99002A4CD0 /* ViewController.swift in Sources */,
+				7CBEE4D22A81F3710079CD5D /* USLDefs.swift in Sources */,
 				7C9EE2DD204B4E99002A4CD0 /* AppDelegate.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		7CBEE4B92A81E08C0079CD5D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				7CBEE4BA2A81E08C0079CD5D /* Credentials.swift in Sources */,
+				7CBEE4BB2A81E08C0079CD5D /* ViewController.swift in Sources */,
+				7CBEE4BC2A81E08C0079CD5D /* AppDelegate.swift in Sources */,
+				7CBEE4D42A81F4850079CD5D /* CGDefs.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		7CDCFD092A9C200B00BE659D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				7CDCFD0A2A9C200B00BE659D /* Credentials.swift in Sources */,
+				7CDCFD1F2A9C4D1B00BE659D /* PhxDefs.swift in Sources */,
+				7CDCFD0B2A9C200B00BE659D /* ViewController.swift in Sources */,
+				7CDCFD0C2A9C200B00BE659D /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -329,11 +459,11 @@
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_ENTITLEMENTS = uslce/uslce.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 27;
+				CURRENT_PROJECT_VERSION = 33;
 				DEVELOPMENT_TEAM = 5393KJA27K;
 				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
 				INFOPLIST_FILE = uslce/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "USLCE Beta";
+				INFOPLIST_KEY_CFBundleDisplayName = USLCE;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.role-playing-games";
 				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -341,7 +471,7 @@
 					"@executable_path/Frameworks",
 				);
 				LIBRARY_SEARCH_PATHS = "$(inherited)";
-				MARKETING_VERSION = 1.0.2;
+				MARKETING_VERSION = 1.0.3;
 				PRODUCT_BUNDLE_IDENTIFIER = com.ziquid.uslce;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -359,11 +489,11 @@
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_ENTITLEMENTS = uslce/uslce.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 27;
+				CURRENT_PROJECT_VERSION = 33;
 				DEVELOPMENT_TEAM = 5393KJA27K;
 				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
 				INFOPLIST_FILE = uslce/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "USLCE Beta";
+				INFOPLIST_KEY_CFBundleDisplayName = USLCE;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.role-playing-games";
 				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -371,12 +501,141 @@
 					"@executable_path/Frameworks",
 				);
 				LIBRARY_SEARCH_PATHS = "$(inherited)";
-				MARKETING_VERSION = 1.0.2;
+				MARKETING_VERSION = 1.0.3;
 				PRODUCT_BUNDLE_IDENTIFIER = com.ziquid.uslce;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = YES;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_OPTIMIZATION_LEVEL = "-Osize";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		7CBEE4C72A81E08C0079CD5D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
+				CODE_SIGN_ENTITLEMENTS = uslce/uslce.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 33;
+				DEVELOPMENT_TEAM = 5393KJA27K;
+				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
+				INFOPLIST_FILE = "uslce/cg-Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "Celestial Glory";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.role-playing-games";
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				LIBRARY_SEARCH_PATHS = "$(inherited)";
+				MARKETING_VERSION = 1.0.3;
+				OTHER_SWIFT_FLAGS = "-DCG";
+				PRODUCT_BUNDLE_IDENTIFIER = com.ziquid.games.cg15;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = YES;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		7CBEE4C82A81E08C0079CD5D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
+				CODE_SIGN_ENTITLEMENTS = uslce/uslce.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 33;
+				DEVELOPMENT_TEAM = 5393KJA27K;
+				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
+				INFOPLIST_FILE = "uslce/cg-Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "Celestial Glory";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.role-playing-games";
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				LIBRARY_SEARCH_PATHS = "$(inherited)";
+				MARKETING_VERSION = 1.0.3;
+				OTHER_SWIFT_FLAGS = "-DCG";
+				"OTHER_SWIFT_FLAGS[arch=*]" = "-DCG";
+				PRODUCT_BUNDLE_IDENTIFIER = com.ziquid.games.cg15;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = YES;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_OPTIMIZATION_LEVEL = "-Osize";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		7CDCFD152A9C200B00BE659D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = PhxAppIcon;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
+				CODE_SIGN_ENTITLEMENTS = uslce/uslce.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 33;
+				DEVELOPMENT_TEAM = 5393KJA27K;
+				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
+				INFOPLIST_FILE = "uslce/phx-Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "Uprising: Phoenix";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.role-playing-games";
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				LIBRARY_SEARCH_PATHS = "$(inherited)";
+				MARKETING_VERSION = 1.0.3;
+				OTHER_SWIFT_FLAGS = "-DCG";
+				PRODUCT_BUNDLE_IDENTIFIER = com.ziquid.games.phx;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = YES;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		7CDCFD162A9C200B00BE659D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = PhxAppIcon;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
+				CODE_SIGN_ENTITLEMENTS = uslce/uslce.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 33;
+				DEVELOPMENT_TEAM = 5393KJA27K;
+				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
+				INFOPLIST_FILE = "uslce/phx-Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "Uprising: Phoenix";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.role-playing-games";
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				LIBRARY_SEARCH_PATHS = "$(inherited)";
+				MARKETING_VERSION = 1.0.3;
+				OTHER_SWIFT_FLAGS = "-DCG";
+				"OTHER_SWIFT_FLAGS[arch=*]" = "-DCG";
+				PRODUCT_BUNDLE_IDENTIFIER = com.ziquid.games.phx;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = YES;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_OPTIMIZATION_LEVEL = "-Osize";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -399,6 +658,24 @@
 			buildConfigurations = (
 				7C9EE2EC204B4E99002A4CD0 /* Debug */,
 				7C9EE2ED204B4E99002A4CD0 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		7CBEE4C62A81E08C0079CD5D /* Build configuration list for PBXNativeTarget "cg15" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				7CBEE4C72A81E08C0079CD5D /* Debug */,
+				7CBEE4C82A81E08C0079CD5D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		7CDCFD142A9C200B00BE659D /* Build configuration list for PBXNativeTarget "phx" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				7CDCFD152A9C200B00BE659D /* Debug */,
+				7CDCFD162A9C200B00BE659D /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

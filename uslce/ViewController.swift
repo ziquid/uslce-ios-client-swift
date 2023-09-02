@@ -22,7 +22,7 @@ class ViewController: UIViewController, WKUIDelegate, WKNavigationDelegate {
     // iOS TTS
     var utterance: AVSpeechUtterance = AVSpeechUtterance(string: "");
     let synthesizer = AVSpeechSynthesizer()
-
+    
     // IBM Text to Speech service object
 //    var textToSpeech: TextToSpeech!
     var soundPlayer: AVAudioPlayer?
@@ -45,7 +45,7 @@ class ViewController: UIViewController, WKUIDelegate, WKNavigationDelegate {
         super.viewDidLoad()
         webView.navigationDelegate = self
         webView.allowsBackForwardNavigationGestures = false
-        print("here we go again!")
+        print(Defs().WelcomeMsg)
         
 //        let text = "I like what I see."
 
@@ -94,6 +94,8 @@ class ViewController: UIViewController, WKUIDelegate, WKNavigationDelegate {
         var deviceOrientation = "portrait"
         var deviceWidth = "320"
         var deviceHeight = "480"
+        var deviceWidthInt = 320
+        var deviceHeightInt = 480
         var userAgent = "unknown userAgent"
         var customUserAgent = "unknown customUserAgent"
         
@@ -113,6 +115,7 @@ class ViewController: UIViewController, WKUIDelegate, WKNavigationDelegate {
             if let result = result {
                 os_log("screen.width: %@", type: .debug, result as! CVarArg);
                 deviceWidth = result as! String
+                deviceWidthInt = Int(deviceWidth) ?? 320
             }
             else {
                 os_log("screen.width returned error: %@", type: .debug, error! as CVarArg);
@@ -121,39 +124,47 @@ class ViewController: UIViewController, WKUIDelegate, WKNavigationDelegate {
         
         webView.evaluateJavaScript("screen.height + ''") { (result, error) in
             if let result = result {
-                os_log("screen.height: %@", type: .debug, result as! CVarArg);
+                os_log("screen.height: %@", type: .debug, result as! CVarArg)
                 deviceHeight = result as! String
+                deviceHeightInt = Int(deviceHeight) ?? 480
+                
+                if deviceWidthInt > deviceHeightInt {
+                    deviceOrientation = "landscape"
+                    os_log("device orientation per JS: %@", type: .info, deviceOrientation);
+                }
             }
             else {
-                os_log("screen.height returned error: %@", type: .debug, error! as CVarArg);
+                os_log("screen.height returned error: %@", type: .debug, error! as CVarArg)
             }
         }
         
         if UIDevice.current.orientation.isLandscape {
-            deviceOrientation = "landscape";
+            deviceOrientation = "landscape"
         }
         os_log("device orientation: %@", type: .info, deviceOrientation);
         
         let uuid = UIDevice.current.identifierForVendor?.uuidString
-        if UIDevice.current.orientation.isLandscape {
-            game = "usl_esa"
-        } else {
-            game = "stlouis"
-        }
+//        if UIDevice.current.orientation.isLandscape {
+//            game = "usl_esa"
+//        } else {
+//            game = "stlouis"
+//        }
         
         //        os_log("UUID: %@", type: .info, uuidPrefix + uuid!)
-        //        #ifdef DEBUG
-//        let myURL = "http://uslce.lndo.site/" + game + "/bounce/" + uuid!
-        //        #else
-         let myURL = "http://zg.games.ziquid.com/" + game + "/bounce/" + uuid!
-        //        #endif
+        #if targetEnvironment(simulator)
+        let myURL = Defs().SimURL + uuid!
+        #elseif DEBUG
+        let myURL = Defs().DevURL + uuid!
+        #else
+        let myURL = Defs().ProdURL + uuid!
+        #endif
         os_log("URL: %@", type: .info, myURL)
         
         webView.evaluateJavaScript("navigator.userAgent") { (result, error) in
             if let result = result {
                 os_log("navigator.userAgent: %@", type: .debug, result as! CVarArg);
                 userAgent = result as! String
-                customUserAgent = " (com.ziquid.uslce; " + versionStr + "; width=" + deviceWidth + "; height=" + deviceHeight +
+                customUserAgent = " (com.ziquid." + Defs().Game + "; " + versionStr + "; width=" + deviceWidth + "; height=" + deviceHeight +
                     "; orientation=" + deviceOrientation + "; authKey=" + authKey + ")"
                 os_log("custom user agent: %@", type: .info, customUserAgent as CVarArg)
                 self.webView.customUserAgent = userAgent + customUserAgent
