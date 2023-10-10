@@ -16,6 +16,10 @@
 		7C2B5D122AD38B3600CAD509 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 7C9EE2E0204B4E99002A4CD0 /* Main.storyboard */; };
 		7C2B5D132AD38B3600CAD509 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 7C9EE2E5204B4E99002A4CD0 /* LaunchScreen.storyboard */; };
 		7C2B5D1C2AD38EA300CAD509 /* CG-TNGDefs.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C2B5D1B2AD38EA300CAD509 /* CG-TNGDefs.swift */; };
+		7C2B5D1D2AD6195000CAD509 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7C9EE2E3204B4E99002A4CD0 /* Assets.xcassets */; };
+		7C2B5D1E2AD6197600CAD509 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7C9EE2E3204B4E99002A4CD0 /* Assets.xcassets */; };
+		7C2B5D1F2AD6197A00CAD509 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7C9EE2E3204B4E99002A4CD0 /* Assets.xcassets */; };
+		7C2B5D202AD6197B00CAD509 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7C9EE2E3204B4E99002A4CD0 /* Assets.xcassets */; };
 		7C7344122352AF9F00BD919B /* mr roboto intro.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 7C7344112352AF9F00BD919B /* mr roboto intro.mp3 */; };
 		7C7344142353BD3C00BD919B /* Uprising intro.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 7C7344132353BD3C00BD919B /* Uprising intro.mp3 */; };
 		7C9EE2DD204B4E99002A4CD0 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C9EE2DC204B4E99002A4CD0 /* AppDelegate.swift */; };
@@ -35,7 +39,6 @@
 		7CDCFD0C2A9C200B00BE659D /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C9EE2DC204B4E99002A4CD0 /* AppDelegate.swift */; };
 		7CDCFD0F2A9C200B00BE659D /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7C2A48892161B285000766AD /* StoreKit.framework */; };
 		7CDCFD112A9C200B00BE659D /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 7C9EE2E0204B4E99002A4CD0 /* Main.storyboard */; };
-		7CDCFD132A9C200B00BE659D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7C9EE2E3204B4E99002A4CD0 /* Assets.xcassets */; };
 		7CDCFD1A2A9C220C00BE659D /* PhxLaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 7CDCFD192A9C220C00BE659D /* PhxLaunchScreen.storyboard */; };
 		7CDCFD1F2A9C4D1B00BE659D /* PhxDefs.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7CDCFD1E2A9C4D1B00BE659D /* PhxDefs.swift */; };
 		7CE3F5F824DE1B8900E98F8D /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7C2A48892161B285000766AD /* StoreKit.framework */; };
@@ -285,6 +288,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				7C2B5D122AD38B3600CAD509 /* Main.storyboard in Resources */,
+				7C2B5D202AD6197B00CAD509 /* Assets.xcassets in Resources */,
 				7C2B5D132AD38B3600CAD509 /* LaunchScreen.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -297,6 +301,7 @@
 				7C7344122352AF9F00BD919B /* mr roboto intro.mp3 in Resources */,
 				7C9EE2E7204B4E99002A4CD0 /* LaunchScreen.storyboard in Resources */,
 				7C7344142353BD3C00BD919B /* Uprising intro.mp3 in Resources */,
+				7C2B5D1D2AD6195000CAD509 /* Assets.xcassets in Resources */,
 				7C9EE2E2204B4E99002A4CD0 /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -306,6 +311,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				7CBEE4CD2A81E5890079CD5D /* Main.storyboard in Resources */,
+				7C2B5D1F2AD6197A00CAD509 /* Assets.xcassets in Resources */,
 				7CBEE4C22A81E08C0079CD5D /* LaunchScreen.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -315,8 +321,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				7CDCFD1A2A9C220C00BE659D /* PhxLaunchScreen.storyboard in Resources */,
+				7C2B5D1E2AD6197600CAD509 /* Assets.xcassets in Resources */,
 				7CDCFD112A9C200B00BE659D /* Main.storyboard in Resources */,
-				7CDCFD132A9C200B00BE659D /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -399,7 +405,7 @@
 				CURRENT_PROJECT_VERSION = 33;
 				DEVELOPMENT_TEAM = 5393KJA27K;
 				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
-				INFOPLIST_FILE = "cg:tng copy-Info.plist";
+				INFOPLIST_FILE = "uslce/cg-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "Celestial Glory";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.role-playing-games";
 				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
@@ -430,7 +436,7 @@
 				CURRENT_PROJECT_VERSION = 33;
 				DEVELOPMENT_TEAM = 5393KJA27K;
 				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
-				INFOPLIST_FILE = "cg:tng copy-Info.plist";
+				INFOPLIST_FILE = "uslce/cg-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "Celestial Glory";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.role-playing-games";
 				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
