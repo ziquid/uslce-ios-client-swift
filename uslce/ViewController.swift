@@ -83,7 +83,10 @@ class ViewController: UIViewController, WKUIDelegate, WKNavigationDelegate {
             case .mac:
                 deviceType = "Mac"
                 break
-            @unknown default:
+            case .vision:
+                deviceType = "Vision"
+                break
+        @unknown default:
                 deviceType = "iUnknown"
                 break
         }

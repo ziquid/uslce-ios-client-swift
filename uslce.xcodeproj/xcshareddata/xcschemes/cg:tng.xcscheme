@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Scheme
-   LastUpgradeVersion = "1430"
+   LastUpgradeVersion = "1500"
    version = "1.7">
    <BuildAction
       parallelizeBuildables = "YES"
@@ -15,8 +15,8 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "7CBEE4B82A81E08C0079CD5D"
-               BuildableName = "cg15.app"
-               BlueprintName = "cg15"
+               BuildableName = "cg-tng.app"
+               BlueprintName = "cg-tng"
                ReferencedContainer = "container:uslce.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -44,8 +44,8 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "7CBEE4B82A81E08C0079CD5D"
-            BuildableName = "cg15.app"
-            BlueprintName = "cg15"
+            BuildableName = "cg-tng.app"
+            BlueprintName = "cg-tng"
             ReferencedContainer = "container:uslce.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
@@ -61,8 +61,8 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "7CBEE4B82A81E08C0079CD5D"
-            BuildableName = "cg15.app"
-            BlueprintName = "cg15"
+            BuildableName = "cg-tng.app"
+            BlueprintName = "cg-tng"
             ReferencedContainer = "container:uslce.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
