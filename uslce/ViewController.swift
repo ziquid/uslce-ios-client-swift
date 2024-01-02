@@ -167,8 +167,11 @@ class ViewController: UIViewController, WKUIDelegate, WKNavigationDelegate {
             if let result = result {
                 os_log("navigator.userAgent: %@", type: .debug, result as! CVarArg);
                 userAgent = result as! String
+                if let range = userAgent.range(of: " (com.ziquid.") {
+                    userAgent = String(userAgent[..<range.lowerBound])
+                }
                 customUserAgent = " (com.ziquid." + Defs().Game + "; " + versionStr + "; width=" + deviceWidth + "; height=" + deviceHeight +
-                    "; orientation=" + deviceOrientation + "; authKey=" + authKey + ")"
+                "; orientation=" + deviceOrientation + "; authKey=" + authKey + ")"
                 os_log("custom user agent: %@", type: .info, customUserAgent as CVarArg)
                 self.webView.customUserAgent = userAgent + customUserAgent
                 let myRequest = URLRequest(url: URL(string: myURL)!)
