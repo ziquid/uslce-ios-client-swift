@@ -1,6 +1,6 @@
 //
-//  CGDefs.swift
-//  Defs for when the app is CG.
+//  CGLegacyDefs.swift
+//  Defs for when the app is CG Legacy (CG on ZG/USLCE).
 //  uslce
 //
 //  Created by Joseph Cheek on 8/7/23.
@@ -10,7 +10,7 @@
 import Foundation
 
 class Defs:NSObject {
-    var WelcomeMsg:String = "Welcome to CG!"
+    var WelcomeMsg:String = "Welcome to CG Legacy!"
     var Game:String = "cg"
     var SimURL:String = "http://uslce.lndo.site/cg/bounce/"
     var DevURL:String = "http://zg.dev.games.ziquid.com/cg/bounce/"

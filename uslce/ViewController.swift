@@ -154,6 +154,9 @@ class ViewController: UIViewController, WKUIDelegate, WKNavigationDelegate {
 //        }
         
         //        os_log("UUID: %@", type: .info, uuidPrefix + uuid!)
+        #if DEBUG
+        os_log("DEBUG is on!")
+        #endif
         #if targetEnvironment(simulator)
         let myURL = Defs().SimURL + uuid!
         #elseif DEBUG
