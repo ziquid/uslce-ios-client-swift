@@ -63,6 +63,7 @@
 	<string>Main</string>
 	<key>UIRequiredDeviceCapabilities</key>
 	<array>
+		<string>accelerometer</string>
 		<string>armv7</string>
 	</array>
 	<key>UIRequiresFullScreen</key>
@@ -75,5 +76,7 @@
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
 	</array>
+	<key>NSMotionUsageDescription</key>
+    <string>This game uses the accelerometer to control portions of the game play.</string>
 </dict>
 </plist>
