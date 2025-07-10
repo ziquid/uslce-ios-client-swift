@@ -32,12 +32,11 @@ class ViewController: UIViewController, WKUIDelegate, WKNavigationDelegate {
         webConfiguration.allowsInlineMediaPlayback = true
         let noAudiovisualMediaType: WKAudiovisualMediaTypes = []
         webConfiguration.mediaTypesRequiringUserActionForPlayback = noAudiovisualMediaType
+        webConfiguration.websiteDataStore = WKWebsiteDataStore.default()
+        WKWebsiteDataStore.default().removeData(ofTypes: [WKWebsiteDataTypeDiskCache, WKWebsiteDataTypeMemoryCache], modifiedSince: Date(timeIntervalSince1970: 0), completionHandler:{ })
         webView = WKWebView(frame: .zero, configuration: webConfiguration)
         webView.contentMode = .scaleAspectFill
         webView.uiDelegate = self
-
-        // Clear caches.
-        URLCache.shared.removeAllCachedResponses()
         view = webView
     }
 
@@ -46,9 +45,19 @@ class ViewController: UIViewController, WKUIDelegate, WKNavigationDelegate {
         webView.navigationDelegate = self
         webView.allowsBackForwardNavigationGestures = false
         print(Defs().WelcomeMsg)
+
         
+        // Clear caches.
+        URLCache.shared.removeAllCachedResponses()
+        URLCache.shared.diskCapacity = 0
+        URLCache.shared.memoryCapacity = 0
+        os_log("Cleared cache")
 //        let text = "I like what I see."
 
+        URLCache.shared = {
+                URLCache(memoryCapacity: 0, diskCapacity: 0, diskPath: nil)
+        }()
+        
         // iOS TTS
 //        utterance = AVSpeechUtterance(string: text)
 //        utterance.voice = AVSpeechSynthesisVoice(language: "en-GB")
@@ -158,7 +167,7 @@ class ViewController: UIViewController, WKUIDelegate, WKNavigationDelegate {
         os_log("DEBUG is on!")
         #endif
         #if targetEnvironment(simulator)
-        let myURL = Defs().SimURL + uuid!
+        let myURL = Defs().DevURL + uuid!
         #elseif DEBUG
         let myURL = Defs().DevURL + uuid!
         #else
@@ -191,10 +200,10 @@ class ViewController: UIViewController, WKUIDelegate, WKNavigationDelegate {
 
     func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
         let scheme = navigationAction.request.url?.scheme
-        if (navigationAction.targetFrame == nil || scheme == "external") {
+        if (navigationAction.targetFrame == nil || scheme == "external" || scheme == "externals") {
             print(navigationAction.request.url?.absoluteString as Any)
             let urlString = navigationAction.request.url!.absoluteString;
-            let newUrlString = urlString.replacingOccurrences(of: "external://", with: "http://")
+            let newUrlString = urlString.replacingOccurrences(of: "external://", with: "http://").replacingOccurrences(of: "externals://", with: "https://")
             let newUrl = URL(string: newUrlString)
             UIApplication.shared.open(newUrl!)
             decisionHandler(.cancel)

@@ -30,8 +30,11 @@
 		7C72FFAF2B435BF200564EDF /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7C9EE2E3204B4E99002A4CD0 /* Assets.xcassets */; };
 		7C72FFB12B43948F00564EDF /* PortraitandLandscapeAppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C72FFB02B43948F00564EDF /* PortraitandLandscapeAppDelegate.swift */; };
 		7C72FFB22B43948F00564EDF /* PortraitandLandscapeAppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C72FFB02B43948F00564EDF /* PortraitandLandscapeAppDelegate.swift */; };
-		7C7344122352AF9F00BD919B /* mr roboto intro.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 7C7344112352AF9F00BD919B /* mr roboto intro.mp3 */; };
-		7C7344142353BD3C00BD919B /* Uprising intro.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 7C7344132353BD3C00BD919B /* Uprising intro.mp3 */; };
+		7C7D0CA12E1727AF0031C39E /* applause.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 7C7D0CA02E1727AF0031C39E /* applause.mp3 */; };
+		7C7D0CA22E1727AF0031C39E /* applause.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 7C7D0CA02E1727AF0031C39E /* applause.mp3 */; };
+		7C7D0CA32E1727AF0031C39E /* applause.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 7C7D0CA02E1727AF0031C39E /* applause.mp3 */; };
+		7C7D0CA42E1727AF0031C39E /* applause.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 7C7D0CA02E1727AF0031C39E /* applause.mp3 */; };
+		7C7D0CA52E1727AF0031C39E /* applause.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 7C7D0CA02E1727AF0031C39E /* applause.mp3 */; };
 		7C9EE2DD204B4E99002A4CD0 /* PortraitAppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C9EE2DC204B4E99002A4CD0 /* PortraitAppDelegate.swift */; };
 		7C9EE2DF204B4E99002A4CD0 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C9EE2DE204B4E99002A4CD0 /* ViewController.swift */; };
 		7C9EE2E2204B4E99002A4CD0 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 7C9EE2E0204B4E99002A4CD0 /* Main.storyboard */; };
@@ -42,7 +45,6 @@
 		7CBEE4C22A81E08C0079CD5D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 7C9EE2E5204B4E99002A4CD0 /* LaunchScreen.storyboard */; };
 		7CBEE4CD2A81E5890079CD5D /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 7C9EE2E0204B4E99002A4CD0 /* Main.storyboard */; };
 		7CBEE4D22A81F3710079CD5D /* USLDefs.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7CBEE4D12A81F3710079CD5D /* USLDefs.swift */; };
-		7CC54699233864070019E3A1 /* In the air tonight teaser.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 7CC54698233864070019E3A1 /* In the air tonight teaser.mp3 */; };
 		7CDCFD0A2A9C200B00BE659D /* Credentials.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C2A48872161B0BA000766AD /* Credentials.swift */; };
 		7CDCFD0B2A9C200B00BE659D /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C9EE2DE204B4E99002A4CD0 /* ViewController.swift */; };
 		7CDCFD0F2A9C200B00BE659D /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7C2A48892161B285000766AD /* StoreKit.framework */; };
@@ -63,8 +65,7 @@
 		7C3A9C362B4B61CC00FD8049 /* cg-legacy-info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "cg-legacy-info.plist"; path = "/Users/joseph/Documents/Source/managed/uslce-ios-client-swift/cg-legacy-info.plist"; sourceTree = "<absolute>"; };
 		7C3A9C372B4B62A900FD8049 /* CGLegacyDefs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CGLegacyDefs.swift; sourceTree = "<group>"; };
 		7C72FFB02B43948F00564EDF /* PortraitandLandscapeAppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PortraitandLandscapeAppDelegate.swift; sourceTree = "<group>"; };
-		7C7344112352AF9F00BD919B /* mr roboto intro.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = "mr roboto intro.mp3"; sourceTree = "<group>"; };
-		7C7344132353BD3C00BD919B /* Uprising intro.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = "Uprising intro.mp3"; sourceTree = "<group>"; };
+		7C7D0CA02E1727AF0031C39E /* applause.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = applause.mp3; sourceTree = "<group>"; };
 		7C9EE2D9204B4E99002A4CD0 /* uslce.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = uslce.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		7C9EE2DC204B4E99002A4CD0 /* PortraitAppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PortraitAppDelegate.swift; sourceTree = "<group>"; };
 		7C9EE2DE204B4E99002A4CD0 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -76,7 +77,6 @@
 		7CBEE4D12A81F3710079CD5D /* USLDefs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = USLDefs.swift; sourceTree = "<group>"; };
 		7CBEE4D32A81F4850079CD5D /* CGClassicDefs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CGClassicDefs.swift; sourceTree = "<group>"; };
 		7CBEE4D52A8339800079CD5D /* cg-classic-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "cg-classic-Info.plist"; sourceTree = "<group>"; };
-		7CC54698233864070019E3A1 /* In the air tonight teaser.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = "In the air tonight teaser.mp3"; sourceTree = "<group>"; };
 		7CDCFD172A9C200B00BE659D /* phx.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = phx.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		7CDCFD192A9C220C00BE659D /* PhxLaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = PhxLaunchScreen.storyboard; sourceTree = "<group>"; };
 		7CDCFD1D2A9C23E600BE659D /* phx-info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "phx-info.plist"; sourceTree = "<group>"; };
@@ -138,9 +138,7 @@
 		7C9EE2D0204B4E99002A4CD0 = {
 			isa = PBXGroup;
 			children = (
-				7C7344112352AF9F00BD919B /* mr roboto intro.mp3 */,
-				7CC54698233864070019E3A1 /* In the air tonight teaser.mp3 */,
-				7C7344132353BD3C00BD919B /* Uprising intro.mp3 */,
+				7C7D0CA02E1727AF0031C39E /* applause.mp3 */,
 				7C9EE2DB204B4E99002A4CD0 /* uslce */,
 				7C9EE2DA204B4E99002A4CD0 /* Products */,
 				7C2A487E2161ABFF000766AD /* Frameworks */,
@@ -281,7 +279,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
 				LastSwiftUpdateCheck = 0920;
-				LastUpgradeCheck = 1500;
+				LastUpgradeCheck = 1640;
 				ORGANIZATIONNAME = "Ziquid Design Studio, LLC";
 				TargetAttributes = {
 					7C9EE2D8204B4E99002A4CD0 = {
@@ -330,6 +328,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				7C2B5D122AD38B3600CAD509 /* Main.storyboard in Resources */,
+				7C7D0CA42E1727AF0031C39E /* applause.mp3 in Resources */,
 				7C2B5D202AD6197B00CAD509 /* Assets.xcassets in Resources */,
 				7C2B5D132AD38B3600CAD509 /* LaunchScreen.storyboard in Resources */,
 			);
@@ -340,6 +339,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				7C3A9C2F2B4B61CC00FD8049 /* Main.storyboard in Resources */,
+				7C7D0CA12E1727AF0031C39E /* applause.mp3 in Resources */,
 				7C3A9C302B4B61CC00FD8049 /* Assets.xcassets in Resources */,
 				7C3A9C312B4B61CC00FD8049 /* LaunchScreen.storyboard in Resources */,
 			);
@@ -349,12 +349,10 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				7CC54699233864070019E3A1 /* In the air tonight teaser.mp3 in Resources */,
-				7C7344122352AF9F00BD919B /* mr roboto intro.mp3 in Resources */,
 				7C9EE2E7204B4E99002A4CD0 /* LaunchScreen.storyboard in Resources */,
-				7C7344142353BD3C00BD919B /* Uprising intro.mp3 in Resources */,
 				7C2B5D1D2AD6195000CAD509 /* Assets.xcassets in Resources */,
 				7C9EE2E2204B4E99002A4CD0 /* Main.storyboard in Resources */,
+				7C7D0CA22E1727AF0031C39E /* applause.mp3 in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -363,6 +361,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				7CBEE4CD2A81E5890079CD5D /* Main.storyboard in Resources */,
+				7C7D0CA32E1727AF0031C39E /* applause.mp3 in Resources */,
 				7C2B5D1F2AD6197A00CAD509 /* Assets.xcassets in Resources */,
 				7CBEE4C22A81E08C0079CD5D /* LaunchScreen.storyboard in Resources */,
 			);
@@ -373,6 +372,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				7CDCFD1A2A9C220C00BE659D /* PhxLaunchScreen.storyboard in Resources */,
+				7C7D0CA52E1727AF0031C39E /* applause.mp3 in Resources */,
 				7C72FFAF2B435BF200564EDF /* Assets.xcassets in Resources */,
 				7CDCFD112A9C200B00BE659D /* Main.storyboard in Resources */,
 			);
@@ -466,7 +466,6 @@
 				CODE_SIGN_ENTITLEMENTS = uslce/uslce.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 35;
-				DEVELOPMENT_TEAM = 5393KJA27K;
 				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
 				INFOPLIST_FILE = "uslce/cg-classic-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "CG Classic";
@@ -497,7 +496,6 @@
 				CODE_SIGN_ENTITLEMENTS = uslce/uslce.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 35;
-				DEVELOPMENT_TEAM = 5393KJA27K;
 				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
 				INFOPLIST_FILE = "uslce/cg-classic-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "CG Classic";
@@ -530,7 +528,6 @@
 				CODE_SIGN_ENTITLEMENTS = uslce/uslce.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 35;
-				DEVELOPMENT_TEAM = 5393KJA27K;
 				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
 				INFOPLIST_FILE = "uslce/cg-legacy-info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "CG Legacy";
@@ -561,7 +558,6 @@
 				CODE_SIGN_ENTITLEMENTS = uslce/uslce.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 35;
-				DEVELOPMENT_TEAM = 5393KJA27K;
 				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
 				INFOPLIST_FILE = "uslce/cg-legacy-info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "CG Legacy";
@@ -622,6 +618,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = 5393KJA27K;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -686,6 +683,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = 5393KJA27K;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -715,19 +713,18 @@
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_ENTITLEMENTS = uslce/uslce.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 36;
-				DEVELOPMENT_TEAM = 5393KJA27K;
+				CURRENT_PROJECT_VERSION = 39;
 				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
 				INFOPLIST_FILE = uslce/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = USLCE;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.role-playing-games";
-				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				LIBRARY_SEARCH_PATHS = "$(inherited)";
-				MARKETING_VERSION = 1.0.5;
+				MARKETING_VERSION = 1.0.8;
 				PRODUCT_BUNDLE_IDENTIFIER = com.ziquid.uslce;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -745,19 +742,18 @@
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_ENTITLEMENTS = uslce/uslce.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 36;
-				DEVELOPMENT_TEAM = 5393KJA27K;
+				CURRENT_PROJECT_VERSION = 39;
 				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
 				INFOPLIST_FILE = uslce/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = USLCE;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.role-playing-games";
-				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				LIBRARY_SEARCH_PATHS = "$(inherited)";
-				MARKETING_VERSION = 1.0.5;
+				MARKETING_VERSION = 1.0.8;
 				PRODUCT_BUNDLE_IDENTIFIER = com.ziquid.uslce;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -777,7 +773,6 @@
 				CODE_SIGN_ENTITLEMENTS = uslce/uslce.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 35;
-				DEVELOPMENT_TEAM = 5393KJA27K;
 				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
 				INFOPLIST_FILE = "uslce/cg-tng-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "Celestial Glory: TNG";
@@ -808,7 +803,6 @@
 				CODE_SIGN_ENTITLEMENTS = uslce/uslce.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 35;
-				DEVELOPMENT_TEAM = 5393KJA27K;
 				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
 				INFOPLIST_FILE = "uslce/cg-tng-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "Celestial Glory: TNG";
@@ -841,7 +835,6 @@
 				CODE_SIGN_ENTITLEMENTS = uslce/uslce.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 35;
-				DEVELOPMENT_TEAM = 5393KJA27K;
 				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
 				INFOPLIST_FILE = "uslce/phx-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "Uprising: Phoenix";
@@ -872,7 +865,6 @@
 				CODE_SIGN_ENTITLEMENTS = uslce/uslce.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 35;
-				DEVELOPMENT_TEAM = 5393KJA27K;
 				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
 				INFOPLIST_FILE = "uslce/phx-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "Uprising: Phoenix";

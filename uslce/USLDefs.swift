@@ -12,7 +12,7 @@ import Foundation
 class Defs:NSObject {
     var WelcomeMsg:String = "Welcome to USL!"
     var Game:String = "stlouis"
-    var SimURL:String = "http://uslce.lndo.site/stlouis/bounce/"
-    var DevURL:String = "http://zg.dev.games.ziquid.com/stlouis/bounce/"
-    var ProdURL:String = "http://zg.games.ziquid.com/stlouis/bounce/"
+    var SimURL:String = "http://zg.docker.localhost/stlouis/bounce/"
+    var DevURL:String = "http://zg.asrock.lan/stlouis/bounce/"
+    var ProdURL:String = "https://zg.games.ziquid.com/stlouis/bounce/"
 }

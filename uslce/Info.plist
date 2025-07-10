@@ -32,26 +32,28 @@
 		<true/>
 		<key>NSExceptionDomains</key>
 		<dict>
-			<key>uslce.lndo.site</key>
+			<key>zg.asrock.lan</key>
 			<dict>
 				<key>NSExceptionAllowsInsecureHTTPLoads</key>
 				<true/>
 				<key>NSExceptionMinimumTLSVersion</key>
-				<string>TLSv1.1</string>
+				<string>TLSv1.3</string>
 				<key>NSIncludesSubdomains</key>
 				<true/>
 			</dict>
-			<key>ziquid.com</key>
+			<key>zg.docker.localhost</key>
 			<dict>
 				<key>NSExceptionAllowsInsecureHTTPLoads</key>
 				<true/>
 				<key>NSExceptionMinimumTLSVersion</key>
-				<string>TLSv1.1</string>
+				<string>TLSv1.3</string>
 				<key>NSIncludesSubdomains</key>
 				<true/>
 			</dict>
 		</dict>
 	</dict>
+	<key>NSMotionUsageDescription</key>
+	<string>This game uses the accelerometer to control portions of the game play.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
@@ -76,7 +78,5 @@
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
 	</array>
-	<key>NSMotionUsageDescription</key>
-    <string>This game uses the accelerometer to control portions of the game play.</string>
 </dict>
 </plist>
