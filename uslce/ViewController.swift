@@ -167,7 +167,7 @@ class ViewController: UIViewController, WKUIDelegate, WKNavigationDelegate {
         os_log("DEBUG is on!")
         #endif
         #if targetEnvironment(simulator)
-        let myURL = Defs().DevURL + uuid!
+        let myURL = Defs().SimURL + uuid!
         #elseif DEBUG
         let myURL = Defs().DevURL + uuid!
         #else
